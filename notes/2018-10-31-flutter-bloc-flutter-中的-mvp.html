@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh" dir="ltr"><head><title>2018-10-31-Flutter-BLoC-Flutter-中的-MVP</title><meta charset="utf-8"/><link rel="preload" href="../index-bb6c1746.css" as="style"/><link rel="preload" href="../prescript-2bfc6315.js" as="script"/><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted Grotesk:wght@400;700&amp;family=Source Sans Pro:ital,wght@0,400;0,600;1,400;1,600&amp;family=IBM Plex Mono:wght@400;600&amp;display=swap"/><link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin="anonymous"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="og:site_name" content="Knowledgebase"/><meta property="og:title" content="2018-10-31-Flutter-BLoC-Flutter-中的-MVP"/><meta property="og:type" content="website"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="2018-10-31-Flutter-BLoC-Flutter-中的-MVP"/><meta name="twitter:description" content="用 StreamController 拆分 Flutter 视图与业务逻辑，说明 BLoC 如何作为 Flutter 中的 MVP 变体。"/><meta property="og:description" content="用 StreamController 拆分 Flutter 视图与业务逻辑，说明 BLoC 如何作为 Flutter 中的 MVP 变体。"/><meta property="og:image:alt" content="用 StreamController 拆分 Flutter 视图与业务逻辑，说明 BLoC 如何作为 Flutter 中的 MVP 变体。"/><meta property="twitter:domain" content="clsrfish.github.io"/><meta property="og:url" content="https://clsrfish.github.io/notes/2018-10-31-flutter-bloc-flutter-中的-mvp"/><meta property="twitter:url" content="https://clsrfish.github.io/notes/2018-10-31-flutter-bloc-flutter-中的-mvp"/><link rel="icon" href="../static/icon.png"/><meta name="description" content="用 StreamController 拆分 Flutter 视图与业务逻辑，说明 BLoC 如何作为 Flutter 中的 MVP 变体。"/><meta name="generator" content="Quartz"/><link href="../index-bb6c1746.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-735924e0.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-589c1cea.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-bbc3f7c0.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-2911f5d1.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-53b25b2b.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-c93c6a44.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-8a06014f.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-77d6a441.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-6ee21cee.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-1ea6ad18.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-34bdfded.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-788c9ca3.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-642859cd.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-4abc06bd.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-274a3dfe.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-94cb6c84.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-9f9b2774.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../static/resource-style-6bd36952.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" rel="stylesheet" type="text/css" data-persist="true"/><script src="../prescript-2bfc6315.js" type="application/javascript" data-persist="true"></script><script type="application/javascript" data-persist="true">const fetchData = fetch("../static/contentIndex.json").then(data => data.json())</script><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta property="og:image" content="https://clsrfish.github.io/notes/2018-10-31-flutter-bloc-flutter-中的-mvp-og-image.webp"/><meta property="og:image:url" content="https://clsrfish.github.io/notes/2018-10-31-flutter-bloc-flutter-中的-mvp-og-image.webp"/><meta name="twitter:image" content="https://clsrfish.github.io/notes/2018-10-31-flutter-bloc-flutter-中的-mvp-og-image.webp"/><meta property="og:image:type" content="image/webp"/></head><body data-slug="notes/2018-10-31-flutter-bloc-flutter-中的-mvp" data-basepath><div id="quartz-root" class="page" data-frame="default"><div id="quartz-body"><div class="left sidebar"><h2 class="page-title"><a href="..">Knowledgebase</a></h2><div class="mobile-only"><div class="spacer"></div></div><div class="flex-component" style="flex-direction: row; flex-wrap: nowrap; gap: 0.5rem;"><div style="flex-grow: 1; flex-shrink: 1; flex-basis: auto; order: 0; align-self: center; justify-self: center;"><div class="search"><button class="search-button" aria-label="搜索" aria-expanded="false"><svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19.9 19.7"><title>Search</title><g class="search-path" fill="none"><path stroke-linecap="square" d="M18.5 18.3l-5.4-5.4"></path><circle cx="8" cy="8" r="7"></circle></g></svg><p>搜索</p></button><div class="search-container"><div class="search-space"><input autocomplete="off" class="search-bar" name="search" type="text" aria-label="搜索内容..." placeholder="搜索内容..."/><div class="search-layout" data-preview="true" data-field-priority="[&quot;title&quot;,&quot;content&quot;,&quot;tags&quot;]"></div></div></div></div></div><div style="flex-grow: 0; flex-shrink: 1; flex-basis: auto; order: 0; align-self: center; justify-self: center;"><button class="darkmode" aria-label="暗色模式"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" class="dayIcon" x="0px" y="0px" viewBox="0 0 35 35" style="enable-background:new 0 0 35 35" xml:space="preserve" aria-label="暗色模式"><title>暗色模式</title><path d="M6,17.5C6,16.672,5.328,16,4.5,16h-3C0.672,16,0,16.672,0,17.5    S0.672,19,1.5,19h3C5.328,19,6,18.328,6,17.5z M7.5,26c-0.414,0-0.789,0.168-1.061,0.439l-2,2C4.168,28.711,4,29.086,4,29.5    C4,30.328,4.671,31,5.5,31c0.414,0,0.789-0.168,1.06-0.44l2-2C8.832,28.289,9,27.914,9,27.5C9,26.672,8.329,26,7.5,26z M17.5,6    C18.329,6,19,5.328,19,4.5v-3C19,0.672,18.329,0,17.5,0S16,0.672,16,1.5v3C16,5.328,16.671,6,17.5,6z M27.5,9    c0.414,0,0.789-0.168,1.06-0.439l2-2C30.832,6.289,31,5.914,31,5.5C31,4.672,30.329,4,29.5,4c-0.414,0-0.789,0.168-1.061,0.44    l-2,2C26.168,6.711,26,7.086,26,7.5C26,8.328,26.671,9,27.5,9z M6.439,8.561C6.711,8.832,7.086,9,7.5,9C8.328,9,9,8.328,9,7.5    c0-0.414-0.168-0.789-0.439-1.061l-2-2C6.289,4.168,5.914,4,5.5,4C4.672,4,4,4.672,4,5.5c0,0.414,0.168,0.789,0.439,1.06    L6.439,8.561z M33.5,16h-3c-0.828,0-1.5,0.672-1.5,1.5s0.672,1.5,1.5,1.5h3c0.828,0,1.5-0.672,1.5-1.5S34.328,16,33.5,16z     M28.561,26.439C28.289,26.168,27.914,26,27.5,26c-0.828,0-1.5,0.672-1.5,1.5c0,0.414,0.168,0.789,0.439,1.06l2,2    C28.711,30.832,29.086,31,29.5,31c0.828,0,1.5-0.672,1.5-1.5c0-0.414-0.168-0.789-0.439-1.061L28.561,26.439z M17.5,29    c-0.829,0-1.5,0.672-1.5,1.5v3c0,0.828,0.671,1.5,1.5,1.5s1.5-0.672,1.5-1.5v-3C19,29.672,18.329,29,17.5,29z M17.5,7    C11.71,7,7,11.71,7,17.5S11.71,28,17.5,28S28,23.29,28,17.5S23.29,7,17.5,7z M17.5,25c-4.136,0-7.5-3.364-7.5-7.5    c0-4.136,3.364-7.5,7.5-7.5c4.136,0,7.5,3.364,7.5,7.5C25,21.636,21.636,25,17.5,25z"></path></svg><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" class="nightIcon" x="0px" y="0px" viewBox="0 0 100 100" style="enable-background:new 0 0 100 100" xml:space="preserve" aria-label="亮色模式"><title>亮色模式</title><path d="M96.76,66.458c-0.853-0.852-2.15-1.064-3.23-0.534c-6.063,2.991-12.858,4.571-19.655,4.571  C62.022,70.495,50.88,65.88,42.5,57.5C29.043,44.043,25.658,23.536,34.076,6.47c0.532-1.08,0.318-2.379-0.534-3.23  c-0.851-0.852-2.15-1.064-3.23-0.534c-4.918,2.427-9.375,5.619-13.246,9.491c-9.447,9.447-14.65,22.008-14.65,35.369  c0,13.36,5.203,25.921,14.65,35.368s22.008,14.65,35.368,14.65c13.361,0,25.921-5.203,35.369-14.65  c3.872-3.871,7.064-8.328,9.491-13.246C97.826,68.608,97.611,67.309,96.76,66.458z"></path></svg></button></div><div style="flex-grow: 0; flex-shrink: 1; flex-basis: auto; order: 0; align-self: center; justify-self: center;"><button class="readermode" aria-label="阅读模式"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" class="readerIcon" fill="currentColor" stroke="currentColor" stroke-width="0.2" stroke-linecap="round" stroke-linejoin="round" width="64px" height="64px" viewBox="0 0 24 24" aria-label="阅读模式"><title>阅读模式</title><g transform="translate(-1.8, -1.8) scale(1.15, 1.2)"><path d="M8.9891247,2.5 C10.1384702,2.5 11.2209868,2.96705384 12.0049645,3.76669482 C12.7883914,2.96705384 13.8709081,2.5 15.0202536,2.5 L18.7549359,2.5 C19.1691495,2.5 19.5049359,2.83578644 19.5049359,3.25 L19.5046891,4.004 L21.2546891,4.00457396 C21.6343849,4.00457396 21.9481801,4.28672784 21.9978425,4.6528034 L22.0046891,4.75457396 L22.0046891,20.25 C22.0046891,20.6296958 21.7225353,20.943491 21.3564597,20.9931534 L21.2546891,21 L2.75468914,21 C2.37499337,21 2.06119817,20.7178461 2.01153575,20.3517706 L2.00468914,20.25 L2.00468914,4.75457396 C2.00468914,4.37487819 2.28684302,4.061083 2.65291858,4.01142057 L2.75468914,4.00457396 L4.50368914,4.004 L4.50444233,3.25 C4.50444233,2.87030423 4.78659621,2.55650904 5.15267177,2.50684662 L5.25444233,2.5 L8.9891247,2.5 Z M4.50368914,5.504 L3.50468914,5.504 L3.50468914,19.5 L10.9478955,19.4998273 C10.4513189,18.9207296 9.73864328,18.5588115 8.96709342,18.5065584 L8.77307039,18.5 L5.25444233,18.5 C4.87474657,18.5 4.56095137,18.2178461 4.51128895,17.8517706 L4.50444233,17.75 L4.50368914,5.504 Z M19.5049359,17.75 C19.5049359,18.1642136 19.1691495,18.5 18.7549359,18.5 L15.2363079,18.5 C14.3910149,18.5 13.5994408,18.8724714 13.0614828,19.4998273 L20.5046891,19.5 L20.5046891,5.504 L19.5046891,5.504 L19.5049359,17.75 Z M18.0059359,3.999 L15.0202536,4 L14.8259077,4.00692283 C13.9889509,4.06666544 13.2254227,4.50975805 12.7549359,5.212 L12.7549359,17.777 L12.7782651,17.7601316 C13.4923805,17.2719483 14.3447024,17 15.2363079,17 L18.0059359,16.999 L18.0056891,4.798 L18.0033792,4.75457396 L18.0056891,4.71 L18.0059359,3.999 Z M8.9891247,4 L6.00368914,3.999 L6.00599909,4.75457396 L6.00599909,4.75457396 L6.00368914,4.783 L6.00368914,16.999 L8.77307039,17 C9.57551536,17 10.3461406,17.2202781 11.0128313,17.6202194 L11.2536891,17.776 L11.2536891,5.211 C10.8200889,4.56369974 10.1361548,4.13636104 9.37521067,4.02745763 L9.18347055,4.00692283 L8.9891247,4 Z"></path></g></svg></button></div></div><div class="explorer nav-files-container" data-behavior="link" data-collapsed="collapsed" data-savestate="true" data-data-fns="{&quot;order&quot;:[&quot;filter&quot;,&quot;map&quot;,&quot;sort&quot;],&quot;sortFn&quot;:&quot;(a2, b2) => {\n    if (!a2.isFolder &amp;&amp; !b2.isFolder || a2.isFolder &amp;&amp; b2.isFolder) {\n      return (a2.displayName || \&quot;\&quot;).localeCompare(b2.displayName || \&quot;\&quot;, void 0, {\n        numeric: true,\n        sensitivity: \&quot;base\&quot;\n      });\n    }\n    if (!a2.isFolder &amp;&amp; b2.isFolder) {\n      return 1;\n    }\n    return -1;\n  }&quot;,&quot;filterFn&quot;:&quot;(node) => node.slugSegment !== \&quot;tags\&quot;&quot;,&quot;mapFn&quot;:&quot;(node) => {\n    return node;\n  }&quot;}"><button type="button" class="explorer-toggle mobile-explorer hide-until-loaded" data-mobile="true" aria-controls="explorer-42" aria-label="探索"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide-menu"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button><button type="button" class="title-button explorer-toggle desktop-explorer" data-mobile="false" aria-expanded="true"><h2>探索</h2><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fold"><polyline points="6 9 12 15 18 9"></polyline></svg></button><div id="explorer-42" class="explorer-content" aria-expanded="false" role="group"><ul class="explorer-ul overflow" id="list-0"><li class="overflow-end"></li></ul></div><template id="template-file"><li><a href="#" class="nav-file-title tree-item-self"></a></li></template><template id="template-folder"><li><div class="folder-container nav-folder-title tree-item-self"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon nav-folder-collapse-indicator collapse-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div><button class="folder-button"><span class="folder-title"></span></button></div></div><div class="folder-outer"><ul class="content tree-item-children"></ul></div></li></template></div></div><div class="center"><div class="page-header"><div class="popover-hint"><nav class="breadcrumb-container" aria-label="breadcrumbs"><div class="breadcrumb-element"><a href="../">Home</a><p> ❯ </p></div><div class="breadcrumb-element"><a href="../notes/">Notes</a><p> ❯ </p></div><div class="breadcrumb-element"><a href>2018-10-31-Flutter-BLoC-Flutter-中的-MVP</a></div></nav><h1 class="article-title">2018-10-31-Flutter-BLoC-Flutter-中的-MVP</h1><details class="note-properties metadata-container" open data-collapsed="false"><summary class="note-properties-header"><span class="note-properties-title">Properties</span><span class="note-properties-count">3</span></summary><table class="note-properties-table"><tbody><tr class="note-properties-row metadata-property"><td class="note-properties-key metadata-property-key">description</td><td class="note-properties-value metadata-property-value"><span class="note-properties-text">用 StreamController 拆分 Flutter 视图与业务逻辑，说明 BLoC 如何作为 Flutter 中的 MVP 变体。</span></td></tr><tr class="note-properties-row metadata-property"><td class="note-properties-key metadata-property-key">tags</td><td class="note-properties-value metadata-property-value"><span class="note-properties-tags"><a href="../tags/flutter" class="internal internal-link tag-link">flutter</a><span class="note-properties-separator">, </span><a href="../tags/bloc" class="internal internal-link tag-link">bloc</a><span class="note-properties-separator">, </span><a href="../tags/dart" class="internal internal-link tag-link">dart</a><span class="note-properties-separator">, </span><a href="../tags/架构" class="internal internal-link tag-link">架构</a></span></td></tr><tr class="note-properties-row metadata-property"><td class="note-properties-key metadata-property-key">aliases</td><td class="note-properties-value metadata-property-value"><span class="note-properties-list"><span class="note-properties-text">BLoC</span></span></td></tr></tbody></table></details><p show-comma="true" class="content-meta"><time datetime="2026-06-01T15:57:00.000Z">2026年6月01日</time><span>11分钟阅读</span></p></div></div><article class="popover-hint"><div class="markdown-preview-view markdown-rendered"><h1 id="flutterblocflutter-中的-mvp">【Flutter】BLoC——Flutter 中的 MVP<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#flutterblocflutter-中的-mvp" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h1>
+<p>写过 Android 的应该都会比较熟悉 MVP 模式，在 Flutter 框架下有着相似的 BLoC（Business Logic Component） 模式，不准确地说，BLoC 就是 MVP 在 Flutter 中的变种。</p>
+<h2 id="statelesswidget-vs-statefulwidget">StatelessWidget vs StatefulWidget<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#statelesswidget-vs-statefulwidget" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>在正式开始讲 BLoC 前，先在此回顾下 <a href="https://flutter.io/tutorials/interactive/#stateful-stateless" class="external external-link">Widget<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a>。</p>
+<p>Widget 在 Flutter 整个绘制过程中，只充当配置的角色，基本不会涉及到的绘制相关的 API，所以在应用运行过程中时刻有大量的 Widget 产生并销毁。但是很多情况下，我们并不想 Widget 的某些状态/数据也一并销毁，比如输入框中已经输入的文本，这时候就有了 Widget 的两个子类——StatelessWidget 和 StatefulWidget。</p>
+<p>所以如果我们想要保存一些状态或者实例变量的话，就需要使用 StatefulWidget。</p>
+<h2 id="stream--sink">Stream &amp; Sink<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#stream--sink" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>在 <a href="../notes/2018-09-24-flutter-dart-异步编程" class="internal internal-link alias" data-slug="notes/2018-09-24-flutter-dart-异步编程">【Flutter】Dart 异步编程</a> 中已经学习了如何通过 <code>async*</code> 和 <code>yield</code> 来创建一个 Stream，这种方式我们只能对 Stream  下游进行监听，也即上游数据源已经确定了，但是在实际应用中，上游数据应该可以来自程序的不同部分。</p>
+<p>Dart 提供了 <code>StreamController&lt;T></code> 这个模板类来帮助开发者创建 Stream 同时向里头添加数据的能力，可以简单理解为：</p>
+<p><img src="https://i.loli.net/2018/11/07/5be2945f8ffa3.png" alt="image"/></p>
+<p>关于它的一些 API 就不多细说了，官方文档里讲得已经非常清楚。</p>
+<h2 id="bloc">BLoC<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#bloc" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>BLoC 的目的也是将视图和逻辑进行分离，让视图层专注于数据的展示，逻辑层管理状态并处理业务逻辑，这和 MVP 一毛一样。</p>
+<p>这里以 Flutter 新建工程为例进行 BLoC 的讲解，先看默认实现：</p>
+<pre><code class="language-dart">class _MyHomePageState extends State&lt;MyHomePage> {
+  int _counter = 0;
+  void _incrementCounter() {
+    setState(() {
+      _counter++;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: &lt;Widget>[
+            Text('You have pushed the button this many times:'),
+            Text('$_counter'),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _incrementCounter,
+        tooltip: 'Increment',
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+</code></pre>
+<p>显示当前 FAB 点击次数，FAB 点击后会触发 <code>_incrementCounter</code> 进一步调用 <code>setState</code> 更新 UI，逻辑比较简单。</p>
+<p>再看看使用 BLoC 后的代码实现：</p>
+<pre><code class="language-dart">class _HomePageState extends State&lt;MyHomePage> {
+  _HomePageBLoC _bloc;
+  _HomePageState() : _bloc = new _HomePageBLoC();
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: &lt;Widget>[
+            Text('You have pushed the button this many times:'),
+            new StreamBuilder&lt;int>(
+              initialData: 0,
+              stream: _bloc.count,
+              builder: (context, snapshot) {
+                return Text('${snapshot.data}');
+              },
+            )
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _bloc.incrementCounter,
+        tooltip: 'Increment',
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class _HomePageBLoC {
+  int _count = 0;
+  StreamController&lt;int> _countController = new StreamController&lt;int>();
+
+  Stream&lt;int> get count => _countController.stream;
+  void incrementCounter() {
+    _countController.sink.add(++_count);
+  }
+}
+</code></pre>
+<p>这次添加了 <code>_HomePageBLoC</code> 作为逻辑层，实现中使用 <code>StreamController&lt;int></code> 来管理点击次数。视图层中，我们需要监听逻辑层中的数据并更新 UI，不过 Flutter 给我们提供了 <code>StreamBuilder&lt;T></code> 来简化操作。</p>
+<p>代码已经非常简单了，就不在赘述。不过要注意这里使用了 <code>StatefulWidget</code> ， 这是为了在 UI 重建的时候 bloc 实例不会丢失。</p>
+<h2 id="scoped-model">Scoped Model<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#scoped-model" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>有时候可能会有多个页面共享数据，Flutter 提供 <a href="https://docs.flutter.io/flutter/widgets/InheritedWidget-class.html" class="external external-link"><code>InheritedWidget</code><svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a> 帮助我们实现这一目的。InheritedWidget 可以将状态/数据向它的子树，当 InheritedWidget 的状态/数据发生变化，<strong>依赖</strong>了这个 InheritedWidget 的子树会进行重建。</p>
+<p>我们对默认的 Flutter 初始工程进行改造，让两个页面都能显示点击次数，下面看下代码实现：</p>
+<h3 id="inhertiedwidget-实现">InhertiedWidget 实现<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#inhertiedwidget-实现" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<pre><code class="language-dart">class CounterBLoC {
+  int _count = 0;
+  // 因为有多个界面对 Stream 进行监听，所以需要使用多播流
+  var _countController = new StreamController&lt;int>.broadcast();
+
+  Stream&lt;int> get count => _countController.stream;
+  // 第二个界面监听 Stream 时，Stream 里头是没有数据的，但是实际上点击次数是有的，所以需要提供一个方法来获取最近的一次数据
+  int get lastCount => _count;
+  void incrementCounter() {
+    _countController.sink.add(++_count);
+  }
+}
+
+class CounterHolder extends InheritedWidget {
+  // 需要向下传递的状态/数据
+  final CounterBLoC bloc;
+
+  CounterHolder({this.bloc, Key key, Widget child})
+      : super(key: key, child: child);
+  // 如果返回值为 true，则通知子树进行重建；返回 false 则不会重建
+  @override
+  bool updateShouldNotify(CounterHolder oldWidget) {
+    return oldWidget.bloc != this.bloc;
+  }
+  // 这个方法有两点作用：
+  // 1、简化获取 CounterHolder 的方式
+  // 2、做更加精细的控制，比如异常等
+  // 在实践中，更推荐的方式是通过这个方法将数据暴漏出去，在这个例子中就是 CounterBLoC 实例。Flutter 中已有的例子有 Theme，Theme.of(ctx) 的返回值是 ThemeData
+  static CounterHolder of(BuildContext ctx) {
+    return ctx.inheritFromWidgetOfExactType(CounterHolder);
+  }
+}
+</code></pre>
+<p>需要注意的地方都在代码中注释了。</p>
+<h3 id="第一个页面实现">第一个页面实现<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#第一个页面实现" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<pre><code class="language-dart">class _HomePageState extends State&lt;HomePage> {
+  @override
+  Widget build(BuildContext context) {
+    // 向上查询 CounterHolder 然后拿到 bloc 实例，此时 HomePage 就显式依赖了 CounterHolder
+    var bloc = CounterHolder.of(context).bloc;
+    return Scaffold(
+      // ...
+      body: new Center(
+        child: new Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: &lt;Widget>[
+            Text('You have pushed the button this many times:'),
+            new StreamBuilder&lt;int>(
+              initialData: bloc.lastCount,
+              stream: bloc.count,
+              builder: (context, snapshot) => new Text('${snapshot.data}'),
+            ),
+            new FlatButton(
+                onPressed: () {
+                  // 跳转到第二个页面
+                  Navigator.of(context)
+                      .push(new MaterialPageRoute(builder: (ctx) {
+                    return new SecondPage();
+                  }));
+                },
+                child: new Text('Go second'))
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: bloc.incrementCounter, // 点击次数增加
+        child: new Icon(Icons.add),
+      ),
+    );
+  }
+}
+</code></pre>
+<h3 id="第二个页面实现">第二个页面实现<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#第二个页面实现" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<pre><code class="language-dart">class SecondPageState extends State&lt;SecondPage> {
+  @override
+  Widget build(BuildContext context) {
+    // 向上查询 CounterHolder 然后拿到 bloc 实例，此时 HomePage 就显式依赖了 CounterHolder
+    var bloc = CounterHolder.of(context).bloc;
+    return new Scaffold(
+      // ...
+      body: new Center(
+        child: new StreamBuilder&lt;int>(
+          initialData: bloc.lastCount,  // 拿到最近一次数据
+          stream: bloc.count,
+          builder: (ctx, snapshot) => new Text('${snapshot.data}'),
+        ),
+      ),
+      floatingActionButton: new FloatingActionButton(
+        onPressed: bloc.incrementCounter, // 点击次数增加
+        child: new Icon(Icons.add),
+      ),
+    );
+  }
+}
+</code></pre>
+<h3 id="使用-counterholder-包裹">使用 CounterHolder 包裹<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#使用-counterholder-包裹" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<pre><code class="language-dart">class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return CounterHolder(
+        bloc: new CounterBLoC(),
+        child: new MaterialApp(
+          title: 'Flutter Demo',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+          ),
+          home: HomePage(title: 'Flutter Demo Home Page'),
+        ));
+  }
+}
+</code></pre>
+<p>这里整个将 MaterialApp 包裹住，那么 CounterHolder 可以向应用里任何地方传递数据。</p>
+<h3 id="从-inheritedwidget-源码">从 InheritedWidget 源码<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#从-inheritedwidget-源码" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>要理解 InheredWidget 的实现原理得先理解 Flutter Framework 层的中 Widget、Element 和 RenderObject 的联系与区别，如果不知道可以先看看 <a href="../notes/2018-11-06-flutter-widget-element-renderobject-理解" class="internal internal-link alias" data-slug="notes/2018-11-06-flutter-widget-element-renderobject-理解">【Flutter】Widget、Element、RenderObject 理解</a>。
+先看看 InhertiedWidget 源码：</p>
+<pre><code class="language-dart">abstract class InheritedWidget extends ProxyWidget {
+  const InheritedWidget({ Key key, Widget child })
+    : super(key: key, child: child);
+  // 划重点
+  @override
+  InheritedElement createElement() => InheritedElement(this);
+  @protected
+  bool updateShouldNotify(covariant InheritedWidget oldWidget);
+}
+abstract class ProxyWidget extends Widget {
+  const ProxyWidget({ Key key, @required this.child }) : super(key: key);
+  final Widget child;
+}
+@immutable
+abstract class Widget extends DiagnosticableTree {
+  // ...
+}
+</code></pre>
+<p>上面代码唯一有用的就是注释的那个函数，我们知道 Widget 在 Flutter 只是充当着一个配置的角色，最后会 Widget 会转化成 Element，同时 Element 会持 Widget 实例。但是知道这个事实似乎还是没什么用，我们暂且将目光先转向 BuildContext，也就是我们调用 <code>inheritFromWidgetOfExactType</code> 方法的对象。BuildContext 是一个抽象类/接口，但巧的是 Element 实现了这个接口，所以看代码：</p>
+<pre><code class="language-dart">@override
+InheritedWidget inheritFromWidgetOfExactType(Type targetType, { Object aspect }) {
+  assert(_debugCheckStateIsActiveForAncestorLookup());
+  final InheritedElement ancestor = _inheritedWidgets == null ? null : _inheritedWidgets[targetType];
+  if (ancestor != null) {
+    assert(ancestor is InheritedElement);
+    return inheritFromElement(ancestor, aspect: aspect);
+  }
+  _hadUnsatisfiedDependencies = true;
+  return null;
+}
+
+@override
+InheritedWidget inheritFromElement(InheritedElement ancestor, { Object aspect }) {
+  assert(ancestor != null);
+  _dependencies ??= HashSet&lt;InheritedElement>();
+  _dependencies.add(ancestor);
+  ancestor.updateDependencies(this, aspect);
+  return ancestor.widget;
+}
+</code></pre>
+<p>首先看到 <code>_inheritedWidgets</code> 这个成员变量，它的类型是 <code>Map&lt;Type, InheritedElement></code>，<code>Element</code> 对它的赋值操作在 <code>_updateInheritance</code> 方法里：</p>
+<pre><code class="language-dart">void _updateInheritance() {
+  assert(_active);
+  _inheritedWidgets = _parent?._inheritedWidgets;
+}
+</code></pre>
+<p>直接拿来主义，<code>InheritedElement</code> 对这个方法进行了重写：</p>
+<pre><code class="language-dart">@override
+void _updateInheritance() {
+  assert(_active);
+  final Map&lt;Type, InheritedElement> incomingWidgets = _parent?._inheritedWidgets;
+  if (incomingWidgets != null)
+    _inheritedWidgets = HashMap&lt;Type, InheritedElement>.from(incomingWidgets);
+  else
+    _inheritedWidgets = HashMap&lt;Type, InheritedElement>();
+  _inheritedWidgets[widget.runtimeType] = this;
+}
+</code></pre>
+<p>看到重点了，这里的 <code>_inheritedWidgets</code> 除了从父节点取值外，还把自己放进去了。所以子节点访问父节点并不是往上递归，而是直接保存下来，空间换时间。
+还能得到一个结论：<code>BuildContext#inheritFromWidgetOfExactType</code> 只能访问最近的一个目标节点，因为 <code>_inheritedWidgets</code> 是一个字典。
+子节点访问父节点的原理就清楚了，还有一个问题就是如何做到通知子节点重建？
+注意最开始 <code>Element#inheritFromElement</code> 方法的这行代码： <code>ancestor.updateDependencies(this, aspect)</code>，这个时候已经知道了 <code>ancestor</code> 的类型是 <code>InheritedElement</code> ，那么看代码：</p>
+<pre><code class="language-dart">@protected
+void updateDependencies(Element dependent, Object aspect) {
+  setDependencies(dependent, null);
+}
+@protected
+void setDependencies(Element dependent, Object value) {
+  _dependents[dependent] = value;
+}
+</code></pre>
+<p><code>InheritedElement</code> 把依赖它的节点给保存下来了，即简单的监听者模式，所以在后续状态/数据更新的时候就遍历 <code>_dependents</code> 进行通知。</p>
+<h2 id="关于-redux">关于 Redux<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#关于-redux" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>因为 Flutter 从 React 中借鉴了非常多，所以 React 中 redux 在 Flutter 中也有相应的实现，不过使用上会比 BLoC 繁琐一些，相比之下也不够直观。所以在非必要的情况下，首选 BLoC 吧。</p>
+<h2 id="reference">Reference<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#reference" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p><a href="https://medium.com/flutter-io/build-reactive-mobile-apps-in-flutter-companion-article-13950959e381" class="external external-link">build reactive mobile apps in flutter<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a></p>
+<p><a href="https://www.dartlang.org/articles/libraries/creating-streams#using-a-streamcontroller" class="external external-link">using a streamcontroller<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a></p></div></article><hr/><div class="page-footer"></div></div><div class="right sidebar"><div class="graph"><h3>关系图谱</h3><div class="graph-outer"><div class="graph-container" data-cfg="{&quot;drag&quot;:true,&quot;zoom&quot;:true,&quot;depth&quot;:1,&quot;scale&quot;:1.1,&quot;repelForce&quot;:0.5,&quot;centerForce&quot;:0.3,&quot;linkDistance&quot;:30,&quot;fontSize&quot;:0.6,&quot;opacityScale&quot;:1,&quot;showTags&quot;:true,&quot;removeTags&quot;:[],&quot;focusOnHover&quot;:false,&quot;enableRadial&quot;:false}"></div><button class="global-graph-icon" aria-label="Global Graph"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 55 55" fill="currentColor" xml:space="preserve"><path d="M49,0c-3.309,0-6,2.691-6,6c0,1.035,0.263,2.009,0.726,2.86l-9.829,9.829C32.542,17.634,30.846,17,29,17
+                s-3.542,0.634-4.898,1.688l-7.669-7.669C16.785,10.424,17,9.74,17,9c0-2.206-1.794-4-4-4S9,6.794,9,9s1.794,4,4,4
+                c0.74,0,1.424-0.215,2.019-0.567l7.669,7.669C21.634,21.458,21,23.154,21,25s0.634,3.542,1.688,4.897L10.024,42.562
+                C8.958,41.595,7.549,41,6,41c-3.309,0-6,2.691-6,6s2.691,6,6,6s6-2.691,6-6c0-1.035-0.263-2.009-0.726-2.86l12.829-12.829
+                c1.106,0.86,2.44,1.436,3.898,1.619v10.16c-2.833,0.478-5,2.942-5,5.91c0,3.309,2.691,6,6,6s6-2.691,6-6c0-2.967-2.167-5.431-5-5.91
+                v-10.16c1.458-0.183,2.792-0.759,3.898-1.619l7.669,7.669C41.215,39.576,41,40.26,41,41c0,2.206,1.794,4,4,4s4-1.794,4-4
+                s-1.794-4-4-4c-0.74,0-1.424,0.215-2.019,0.567l-7.669-7.669C36.366,28.542,37,26.846,37,25s-0.634-3.542-1.688-4.897l9.665-9.665
+                C46.042,11.405,47.451,12,49,12c3.309,0,6-2.691,6-6S52.309,0,49,0z M11,9c0-1.103,0.897-2,2-2s2,0.897,2,2s-0.897,2-2,2
+                S11,10.103,11,9z M6,51c-2.206,0-4-1.794-4-4s1.794-4,4-4s4,1.794,4,4S8.206,51,6,51z M33,49c0,2.206-1.794,4-4,4s-4-1.794-4-4
+                s1.794-4,4-4S33,46.794,33,49z M29,31c-3.309,0-6-2.691-6-6s2.691-6,6-6s6,2.691,6,6S32.309,31,29,31z M47,41c0,1.103-0.897,2-2,2
+                s-2-0.897-2-2s0.897-2,2-2S47,39.897,47,41z M49,10c-2.206,0-4-1.794-4-4s1.794-4,4-4s4,1.794,4,4S51.206,10,49,10z"></path></svg></button></div><div class="global-graph-outer"><div class="global-graph-container" data-cfg="{&quot;drag&quot;:true,&quot;zoom&quot;:true,&quot;depth&quot;:-1,&quot;scale&quot;:0.9,&quot;repelForce&quot;:0.5,&quot;centerForce&quot;:0.2,&quot;linkDistance&quot;:30,&quot;fontSize&quot;:0.6,&quot;opacityScale&quot;:1,&quot;showTags&quot;:true,&quot;removeTags&quot;:[],&quot;focusOnHover&quot;:true,&quot;enableRadial&quot;:true}"></div></div></div><div class="toc"><button type="button" class="toc-header" aria-controls="toc-36" aria-expanded="true"><h3>目录</h3><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fold"><polyline points="6 9 12 15 18 9"></polyline></svg></button><ul id="list-0" class="toc-content overflow"><li class="depth-0"><a href="#flutterblocflutter-中的-mvp" data-for="flutterblocflutter-中的-mvp">【Flutter】BLoC——Flutter 中的 MVP</a></li><li class="depth-1"><a href="#statelesswidget-vs-statefulwidget" data-for="statelesswidget-vs-statefulwidget">StatelessWidget vs StatefulWidget</a></li><li class="depth-1"><a href="#stream--sink" data-for="stream--sink">Stream &amp; Sink</a></li><li class="depth-1"><a href="#bloc" data-for="bloc">BLoC</a></li><li class="depth-1"><a href="#scoped-model" data-for="scoped-model">Scoped Model</a></li><li class="depth-2"><a href="#inhertiedwidget-实现" data-for="inhertiedwidget-实现">InhertiedWidget 实现</a></li><li class="depth-2"><a href="#第一个页面实现" data-for="第一个页面实现">第一个页面实现</a></li><li class="depth-2"><a href="#第二个页面实现" data-for="第二个页面实现">第二个页面实现</a></li><li class="depth-2"><a href="#使用-counterholder-包裹" data-for="使用-counterholder-包裹">使用 CounterHolder 包裹</a></li><li class="depth-2"><a href="#从-inheritedwidget-源码" data-for="从-inheritedwidget-源码">从 InheritedWidget 源码</a></li><li class="depth-1"><a href="#关于-redux" data-for="关于-redux">关于 Redux</a></li><li class="depth-1"><a href="#reference" data-for="reference">Reference</a></li><li class="overflow-end"></li></ul></div></div><footer class><p>Created with <a href="https://quartz.jzhao.xyz/">Quartz v5.0.0</a> © 2026</p><ul><li><a href="https://github.com/clsrfish/knowledgebase">GitHub</a></li></ul></footer></div></div></body><script src="../static/resource-after-8b336f9a.js" type="application/javascript" data-persist="true"></script><script src="../static/resource-after-baba652b.js" type="application/javascript" data-persist="true"></script><script src="../static/resource-after-5eb75950.js" type="module" data-persist="true"></script><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/copy-tex.min.js" type="application/javascript" data-persist="true"></script><script src="../postscript-1d7bbe70.js" type="module" data-persist="true"></script></html>

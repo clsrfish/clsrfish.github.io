@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh" dir="ltr"><head><title>2026-05-28-Pi-Agent-学习笔记</title><meta charset="utf-8"/><link rel="preload" href="../index-bb6c1746.css" as="style"/><link rel="preload" href="../prescript-2bfc6315.js" as="script"/><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted Grotesk:wght@400;700&amp;family=Source Sans Pro:ital,wght@0,400;0,600;1,400;1,600&amp;family=IBM Plex Mono:wght@400;600&amp;display=swap"/><link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin="anonymous"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="og:site_name" content="Knowledgebase"/><meta property="og:title" content="2026-05-28-Pi-Agent-学习笔记"/><meta property="og:type" content="website"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="2026-05-28-Pi-Agent-学习笔记"/><meta name="twitter:description" content="Pi Agent (earendil-works/pi) 开源 AI 编程助手学习笔记——架构、agent loop、工具系统、扩展机制、二次开发的深度拆解"/><meta property="og:description" content="Pi Agent (earendil-works/pi) 开源 AI 编程助手学习笔记——架构、agent loop、工具系统、扩展机制、二次开发的深度拆解"/><meta property="og:image:alt" content="Pi Agent (earendil-works/pi) 开源 AI 编程助手学习笔记——架构、agent loop、工具系统、扩展机制、二次开发的深度拆解"/><meta property="twitter:domain" content="clsrfish.github.io"/><meta property="og:url" content="https://clsrfish.github.io/notes/2026-05-28-pi-agent-学习笔记"/><meta property="twitter:url" content="https://clsrfish.github.io/notes/2026-05-28-pi-agent-学习笔记"/><link rel="icon" href="../static/icon.png"/><meta name="description" content="Pi Agent (earendil-works/pi) 开源 AI 编程助手学习笔记——架构、agent loop、工具系统、扩展机制、二次开发的深度拆解"/><meta name="generator" content="Quartz"/><link href="../index-bb6c1746.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-735924e0.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-589c1cea.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-bbc3f7c0.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-2911f5d1.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-53b25b2b.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-c93c6a44.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-8a06014f.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-77d6a441.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-6ee21cee.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-1ea6ad18.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-34bdfded.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-788c9ca3.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-642859cd.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-4abc06bd.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-274a3dfe.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-94cb6c84.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-9f9b2774.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../static/resource-style-6bd36952.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" rel="stylesheet" type="text/css" data-persist="true"/><script src="../prescript-2bfc6315.js" type="application/javascript" data-persist="true"></script><script type="application/javascript" data-persist="true">const fetchData = fetch("../static/contentIndex.json").then(data => data.json())</script><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta property="og:image" content="https://clsrfish.github.io/notes/2026-05-28-pi-agent-学习笔记-og-image.webp"/><meta property="og:image:url" content="https://clsrfish.github.io/notes/2026-05-28-pi-agent-学习笔记-og-image.webp"/><meta name="twitter:image" content="https://clsrfish.github.io/notes/2026-05-28-pi-agent-学习笔记-og-image.webp"/><meta property="og:image:type" content="image/webp"/></head><body data-slug="notes/2026-05-28-pi-agent-学习笔记" data-basepath><div id="quartz-root" class="page" data-frame="default"><div id="quartz-body"><div class="left sidebar"><h2 class="page-title"><a href="..">Knowledgebase</a></h2><div class="mobile-only"><div class="spacer"></div></div><div class="flex-component" style="flex-direction: row; flex-wrap: nowrap; gap: 0.5rem;"><div style="flex-grow: 1; flex-shrink: 1; flex-basis: auto; order: 0; align-self: center; justify-self: center;"><div class="search"><button class="search-button" aria-label="搜索" aria-expanded="false"><svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19.9 19.7"><title>Search</title><g class="search-path" fill="none"><path stroke-linecap="square" d="M18.5 18.3l-5.4-5.4"></path><circle cx="8" cy="8" r="7"></circle></g></svg><p>搜索</p></button><div class="search-container"><div class="search-space"><input autocomplete="off" class="search-bar" name="search" type="text" aria-label="搜索内容..." placeholder="搜索内容..."/><div class="search-layout" data-preview="true" data-field-priority="[&quot;title&quot;,&quot;content&quot;,&quot;tags&quot;]"></div></div></div></div></div><div style="flex-grow: 0; flex-shrink: 1; flex-basis: auto; order: 0; align-self: center; justify-self: center;"><button class="darkmode" aria-label="暗色模式"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" class="dayIcon" x="0px" y="0px" viewBox="0 0 35 35" style="enable-background:new 0 0 35 35" xml:space="preserve" aria-label="暗色模式"><title>暗色模式</title><path d="M6,17.5C6,16.672,5.328,16,4.5,16h-3C0.672,16,0,16.672,0,17.5    S0.672,19,1.5,19h3C5.328,19,6,18.328,6,17.5z M7.5,26c-0.414,0-0.789,0.168-1.061,0.439l-2,2C4.168,28.711,4,29.086,4,29.5    C4,30.328,4.671,31,5.5,31c0.414,0,0.789-0.168,1.06-0.44l2-2C8.832,28.289,9,27.914,9,27.5C9,26.672,8.329,26,7.5,26z M17.5,6    C18.329,6,19,5.328,19,4.5v-3C19,0.672,18.329,0,17.5,0S16,0.672,16,1.5v3C16,5.328,16.671,6,17.5,6z M27.5,9    c0.414,0,0.789-0.168,1.06-0.439l2-2C30.832,6.289,31,5.914,31,5.5C31,4.672,30.329,4,29.5,4c-0.414,0-0.789,0.168-1.061,0.44    l-2,2C26.168,6.711,26,7.086,26,7.5C26,8.328,26.671,9,27.5,9z M6.439,8.561C6.711,8.832,7.086,9,7.5,9C8.328,9,9,8.328,9,7.5    c0-0.414-0.168-0.789-0.439-1.061l-2-2C6.289,4.168,5.914,4,5.5,4C4.672,4,4,4.672,4,5.5c0,0.414,0.168,0.789,0.439,1.06    L6.439,8.561z M33.5,16h-3c-0.828,0-1.5,0.672-1.5,1.5s0.672,1.5,1.5,1.5h3c0.828,0,1.5-0.672,1.5-1.5S34.328,16,33.5,16z     M28.561,26.439C28.289,26.168,27.914,26,27.5,26c-0.828,0-1.5,0.672-1.5,1.5c0,0.414,0.168,0.789,0.439,1.06l2,2    C28.711,30.832,29.086,31,29.5,31c0.828,0,1.5-0.672,1.5-1.5c0-0.414-0.168-0.789-0.439-1.061L28.561,26.439z M17.5,29    c-0.829,0-1.5,0.672-1.5,1.5v3c0,0.828,0.671,1.5,1.5,1.5s1.5-0.672,1.5-1.5v-3C19,29.672,18.329,29,17.5,29z M17.5,7    C11.71,7,7,11.71,7,17.5S11.71,28,17.5,28S28,23.29,28,17.5S23.29,7,17.5,7z M17.5,25c-4.136,0-7.5-3.364-7.5-7.5    c0-4.136,3.364-7.5,7.5-7.5c4.136,0,7.5,3.364,7.5,7.5C25,21.636,21.636,25,17.5,25z"></path></svg><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" class="nightIcon" x="0px" y="0px" viewBox="0 0 100 100" style="enable-background:new 0 0 100 100" xml:space="preserve" aria-label="亮色模式"><title>亮色模式</title><path d="M96.76,66.458c-0.853-0.852-2.15-1.064-3.23-0.534c-6.063,2.991-12.858,4.571-19.655,4.571  C62.022,70.495,50.88,65.88,42.5,57.5C29.043,44.043,25.658,23.536,34.076,6.47c0.532-1.08,0.318-2.379-0.534-3.23  c-0.851-0.852-2.15-1.064-3.23-0.534c-4.918,2.427-9.375,5.619-13.246,9.491c-9.447,9.447-14.65,22.008-14.65,35.369  c0,13.36,5.203,25.921,14.65,35.368s22.008,14.65,35.368,14.65c13.361,0,25.921-5.203,35.369-14.65  c3.872-3.871,7.064-8.328,9.491-13.246C97.826,68.608,97.611,67.309,96.76,66.458z"></path></svg></button></div><div style="flex-grow: 0; flex-shrink: 1; flex-basis: auto; order: 0; align-self: center; justify-self: center;"><button class="readermode" aria-label="阅读模式"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" class="readerIcon" fill="currentColor" stroke="currentColor" stroke-width="0.2" stroke-linecap="round" stroke-linejoin="round" width="64px" height="64px" viewBox="0 0 24 24" aria-label="阅读模式"><title>阅读模式</title><g transform="translate(-1.8, -1.8) scale(1.15, 1.2)"><path d="M8.9891247,2.5 C10.1384702,2.5 11.2209868,2.96705384 12.0049645,3.76669482 C12.7883914,2.96705384 13.8709081,2.5 15.0202536,2.5 L18.7549359,2.5 C19.1691495,2.5 19.5049359,2.83578644 19.5049359,3.25 L19.5046891,4.004 L21.2546891,4.00457396 C21.6343849,4.00457396 21.9481801,4.28672784 21.9978425,4.6528034 L22.0046891,4.75457396 L22.0046891,20.25 C22.0046891,20.6296958 21.7225353,20.943491 21.3564597,20.9931534 L21.2546891,21 L2.75468914,21 C2.37499337,21 2.06119817,20.7178461 2.01153575,20.3517706 L2.00468914,20.25 L2.00468914,4.75457396 C2.00468914,4.37487819 2.28684302,4.061083 2.65291858,4.01142057 L2.75468914,4.00457396 L4.50368914,4.004 L4.50444233,3.25 C4.50444233,2.87030423 4.78659621,2.55650904 5.15267177,2.50684662 L5.25444233,2.5 L8.9891247,2.5 Z M4.50368914,5.504 L3.50468914,5.504 L3.50468914,19.5 L10.9478955,19.4998273 C10.4513189,18.9207296 9.73864328,18.5588115 8.96709342,18.5065584 L8.77307039,18.5 L5.25444233,18.5 C4.87474657,18.5 4.56095137,18.2178461 4.51128895,17.8517706 L4.50444233,17.75 L4.50368914,5.504 Z M19.5049359,17.75 C19.5049359,18.1642136 19.1691495,18.5 18.7549359,18.5 L15.2363079,18.5 C14.3910149,18.5 13.5994408,18.8724714 13.0614828,19.4998273 L20.5046891,19.5 L20.5046891,5.504 L19.5046891,5.504 L19.5049359,17.75 Z M18.0059359,3.999 L15.0202536,4 L14.8259077,4.00692283 C13.9889509,4.06666544 13.2254227,4.50975805 12.7549359,5.212 L12.7549359,17.777 L12.7782651,17.7601316 C13.4923805,17.2719483 14.3447024,17 15.2363079,17 L18.0059359,16.999 L18.0056891,4.798 L18.0033792,4.75457396 L18.0056891,4.71 L18.0059359,3.999 Z M8.9891247,4 L6.00368914,3.999 L6.00599909,4.75457396 L6.00599909,4.75457396 L6.00368914,4.783 L6.00368914,16.999 L8.77307039,17 C9.57551536,17 10.3461406,17.2202781 11.0128313,17.6202194 L11.2536891,17.776 L11.2536891,5.211 C10.8200889,4.56369974 10.1361548,4.13636104 9.37521067,4.02745763 L9.18347055,4.00692283 L8.9891247,4 Z"></path></g></svg></button></div></div><div class="explorer nav-files-container" data-behavior="link" data-collapsed="collapsed" data-savestate="true" data-data-fns="{&quot;order&quot;:[&quot;filter&quot;,&quot;map&quot;,&quot;sort&quot;],&quot;sortFn&quot;:&quot;(a2, b2) => {\n    if (!a2.isFolder &amp;&amp; !b2.isFolder || a2.isFolder &amp;&amp; b2.isFolder) {\n      return (a2.displayName || \&quot;\&quot;).localeCompare(b2.displayName || \&quot;\&quot;, void 0, {\n        numeric: true,\n        sensitivity: \&quot;base\&quot;\n      });\n    }\n    if (!a2.isFolder &amp;&amp; b2.isFolder) {\n      return 1;\n    }\n    return -1;\n  }&quot;,&quot;filterFn&quot;:&quot;(node) => node.slugSegment !== \&quot;tags\&quot;&quot;,&quot;mapFn&quot;:&quot;(node) => {\n    return node;\n  }&quot;}"><button type="button" class="explorer-toggle mobile-explorer hide-until-loaded" data-mobile="true" aria-controls="explorer-103" aria-label="探索"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide-menu"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button><button type="button" class="title-button explorer-toggle desktop-explorer" data-mobile="false" aria-expanded="true"><h2>探索</h2><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fold"><polyline points="6 9 12 15 18 9"></polyline></svg></button><div id="explorer-103" class="explorer-content" aria-expanded="false" role="group"><ul class="explorer-ul overflow" id="list-0"><li class="overflow-end"></li></ul></div><template id="template-file"><li><a href="#" class="nav-file-title tree-item-self"></a></li></template><template id="template-folder"><li><div class="folder-container nav-folder-title tree-item-self"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon nav-folder-collapse-indicator collapse-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div><button class="folder-button"><span class="folder-title"></span></button></div></div><div class="folder-outer"><ul class="content tree-item-children"></ul></div></li></template></div></div><div class="center"><div class="page-header"><div class="popover-hint"><nav class="breadcrumb-container" aria-label="breadcrumbs"><div class="breadcrumb-element"><a href="../">Home</a><p> ❯ </p></div><div class="breadcrumb-element"><a href="../notes/">Notes</a><p> ❯ </p></div><div class="breadcrumb-element"><a href>2026-05-28-Pi-Agent-学习笔记</a></div></nav><h1 class="article-title">2026-05-28-Pi-Agent-学习笔记</h1><details class="note-properties metadata-container" open data-collapsed="false"><summary class="note-properties-header"><span class="note-properties-title">Properties</span><span class="note-properties-count">3</span></summary><table class="note-properties-table"><tbody><tr class="note-properties-row metadata-property"><td class="note-properties-key metadata-property-key">description</td><td class="note-properties-value metadata-property-value"><span class="note-properties-text">Pi Agent (earendil-works/pi) 开源 AI 编程助手学习笔记——架构、agent loop、工具系统、扩展机制、二次开发的深度拆解</span></td></tr><tr class="note-properties-row metadata-property"><td class="note-properties-key metadata-property-key">tags</td><td class="note-properties-value metadata-property-value"><span class="note-properties-tags"><a href="../tags/ai编程" class="internal internal-link tag-link">ai编程</a><span class="note-properties-separator">, </span><a href="../tags/智能体" class="internal internal-link tag-link">智能体</a><span class="note-properties-separator">, </span><a href="../tags/开源" class="internal internal-link tag-link">开源</a><span class="note-properties-separator">, </span><a href="../tags/typescript" class="internal internal-link tag-link">typescript</a></span></td></tr><tr class="note-properties-row metadata-property"><td class="note-properties-key metadata-property-key">aliases</td><td class="note-properties-value metadata-property-value"><span class="note-properties-list"><span class="note-properties-text">pi-agent</span><span class="note-properties-separator">, </span><span class="note-properties-text">pi agent</span></span></td></tr></tbody></table></details><p show-comma="true" class="content-meta"><time datetime="2026-05-29T16:58:00.000Z">2026年5月30日</time><span>11分钟阅读</span></p></div></div><article class="popover-hint"><div class="markdown-preview-view markdown-rendered"><h1 id="pi-agent-学习笔记">Pi Agent 学习笔记<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#pi-agent-学习笔记" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h1>
+<blockquote>
+<p>Pi Agent 是 Mario Zechner（libGDX 创始人）开发的开源 AI 编程助手，核心理念是 <strong>radical simplicity</strong>：agent loop 仅 ~418 行 TypeScript，system prompt &lt;1000 tokens，4 个核心工具。仓库 star 数以 GitHub 实时页面为准（本笔记补源时为 57k+）。</p>
+</blockquote>
+<h2 id="架构总览">架构总览<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#架构总览" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p></p><blockquote class="transclude" data-url="pi-agent-architecture.excalidraw" data-block data-embed-alias><h1>pi-agent-architecture</h1><article class="excalidraw-page" role="img" aria-label="pi-agent-architecture"><div class="excalidraw-controls"><button class="excalidraw-zoom-in" type="button" aria-label="Zoom in">+</button><button class="excalidraw-zoom-out" type="button" aria-label="Zoom out">−</button><button class="excalidraw-reset" type="button" aria-label="Reset view">⟲</button></div><div class="excalidraw-container"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1197 1465" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" data-bg-color="var(--excalidraw-bg, #ffffff)">
+<defs><style>
+@font-face {
+  font-family: "Virgil";
+  src: url("https://unpkg.com/@excalidraw/excalidraw@0.17.0/dist/prod/Virgil-Regular-hO16.woff2") format("woff2");
+}
+</style></defs>
+<g transform="translate(-41, 0)">
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="28" fill="var(--excalidraw-color-1e1e1e, #1e1e1e)" text-anchor="middle" dominant-baseline="auto"><tspan x="500.00" y="48.00">Pi Agent 架构总览</tspan></text>
+<path d="M98.80 80.84 L900.09 81.62 L898.51 178.47 L99.85 181.06" fill="var(--excalidraw-color-ffc9c9, #ffc9c9)" stroke="none"></path>
+<path d="M99.89 79.97 C260.55 82.03,420.37 81.32,900.17 79.51 M99.88 79.81 C294.11 80.69,488.00 80.23,899.94 80.20 M901.07 78.50 C900.27 103.96,901.66 125.72,900.78 180.26 M899.60 79.40 C899.11 112.96,899.16 146.41,899.81 179.70 M900.04 180.63 C714.95 183.78,529.30 183.34,100.67 180.48 M899.65 180.29 C618.87 177.34,337.32 177.93,100.35 179.63 M100.56 181.44 C100.07 141.58,100.61 103.64,99.18 79.59 M99.44 181.00 C99.22 146.94,100.23 113.69,99.88 80.98" stroke="var(--excalidraw-color-e03131, #e03131)" stroke-width="2" fill="none"></path>
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="16" fill="var(--excalidraw-color-e03131, #e03131)" text-anchor="start" dominant-baseline="auto"><tspan x="120.00" y="106.00">Layer 4: pi-coding-agent (Domain)</tspan></text>
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="14" fill="var(--excalidraw-color-1e1e1e, #1e1e1e)" text-anchor="start" dominant-baseline="auto"><tspan x="120.00" y="134.00">AgentSession · SessionManager · ExtensionRunner</tspan><tspan x="120.00" y="151.50">Tools: read / write / edit / bash + grep / find / ls (read-only)</tspan><tspan x="120.00" y="169.00">Skills · Prompt Templates · Themes · Pi Packages</tspan></text>
+<path d="M100.00 201.11 L901.23 201.06 L901.27 299.17 L100.63 299.66" fill="var(--excalidraw-color-b2f2bb, #b2f2bb)" stroke="none"></path>
+<path d="M100.11 200.33 C259.38 203.88,420.52 202.90,900.01 200.78 M100.30 199.73 C345.49 199.52,590.99 199.18,899.64 199.91 M899.68 199.25 C901.19 226.90,900.64 257.30,898.95 299.65 M899.49 200.00 C898.78 233.90,899.90 268.53,900.03 299.76 M900.51 299.57 C677.77 302.64,454.45 303.16,100.47 300.79 M899.71 299.71 C676.17 301.56,452.69 301.82,100.28 300.08 M100.40 298.59 C98.68 276.95,102.01 254.09,98.96 201.97 M99.09 300.99 C101.05 278.85,101.58 255.73,100.20 200.94" stroke="var(--excalidraw-color-2f9e44, #2f9e44)" stroke-width="2" fill="none"></path>
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="16" fill="var(--excalidraw-color-2f9e44, #2f9e44)" text-anchor="start" dominant-baseline="auto"><tspan x="120.00" y="226.00">Layer 3: pi-agent-core (Execution Engine)</tspan></text>
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="14" fill="var(--excalidraw-color-1e1e1e, #1e1e1e)" text-anchor="start" dominant-baseline="auto"><tspan x="120.00" y="254.00">Agent class · agentLoop (418 行) · AgentState</tspan><tspan x="120.00" y="271.50">Event-driven: subscribe → AgentEvent stream</tspan><tspan x="120.00" y="289.00">Steering (中途注入) · Follow-up (完成后追加) · 并行/串行 tool execution</tspan></text>
+<path d="M101.20 321.37 L898.36 320.49 L900.03 399.87 L101.40 398.26" fill="var(--excalidraw-color-a5d8ff, #a5d8ff)" stroke="none"></path>
+<path d="M100.34 320.68 C259.81 317.73,420.67 318.08,899.86 320.46 M99.92 319.65 C396.86 318.35,693.18 318.93,900.14 319.61 M898.29 320.00 C898.24 347.04,899.77 375.28,901.12 399.05 M899.38 320.61 C900.55 347.89,898.74 374.77,900.26 399.82 M899.37 400.12 C638.99 403.11,379.60 402.97,100.28 399.51 M899.78 399.94 C734.28 399.37,568.07 400.11,100.20 399.73 M100.24 399.75 C99.44 378.21,97.58 352.32,98.73 320.35 M100.74 400.99 C100.86 374.96,100.90 350.18,100.53 320.90" stroke="var(--excalidraw-color-1971c2, #1971c2)" stroke-width="2" fill="none"></path>
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="16" fill="var(--excalidraw-color-1971c2, #1971c2)" text-anchor="start" dominant-baseline="auto"><tspan x="120.00" y="346.00">Layer 2: pi-ai (Unified LLM API)</tspan></text>
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="14" fill="var(--excalidraw-color-1e1e1e, #1e1e1e)" text-anchor="start" dominant-baseline="auto"><tspan x="120.00" y="374.00">stream() · MODELS registry · AuthStorage · 15+ providers (OpenAI / Anthropic / Gemini / Bedrock ...)</tspan></text>
+<path d="M98.40 421.64 L899.50 419.92 L898.79 480.57 L98.18 480.86" fill="#dee2e6" stroke="none"></path>
+<path d="M100.57 419.44 C260.23 419.58,420.81 419.65,899.71 420.13 M100.35 420.36 C288.23 417.98,476.17 417.88,899.85 420.11 M900.90 420.76 C900.64 445.08,900.25 469.05,899.30 478.44 M899.27 419.21 C900.34 441.68,899.60 462.58,900.48 479.87 M899.83 480.66 C601.82 483.57,304.76 482.78,100.08 479.82 M899.85 480.17 C631.58 477.99,364.24 477.60,100.13 480.18 M100.07 480.90 C101.88 457.89,98.82 439.39,98.51 418.73 M100.40 480.98 C99.01 468.72,98.57 455.92,100.85 420.87" stroke="var(--excalidraw-color-868e96, #868e96)" stroke-width="2" fill="none"></path>
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="16" fill="var(--excalidraw-color-868e96, #868e96)" text-anchor="start" dominant-baseline="auto"><tspan x="120.00" y="451.00">Layer 1: pi-mono (Build / Infra / NPM Workspaces)</tspan></text>
+<path d="M949.20 80.48 L1151.59 79.54 L1149.30 161.04 L950.03 159.92" fill="var(--excalidraw-color-ffec99, #ffec99)" stroke="none"></path>
+<path d="M949.23 80.48 C989.87 78.07,1030.67 80.21,1151.51 80.99 M949.61 79.50 C1005.26 81.22,1060.24 79.95,1150.41 79.81 M1149.98 81.26 C1148.28 98.20,1149.27 115.07,1148.08 160.70 M1149.87 79.61 C1149.22 103.95,1150.53 126.62,1149.29 160.58 M1151.52 161.10 C1110.51 162.89,1066.81 160.13,949.89 158.88 M1149.76 160.12 C1093.40 158.57,1035.57 158.99,950.19 160.49 M948.63 160.34 C950.84 133.85,952.32 105.78,949.69 80.32 M950.83 160.98 C949.92 133.18,950.50 107.66,949.73 80.84" stroke="var(--excalidraw-color-f08c00, #f08c00)" stroke-width="2" fill="none"></path>
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="14" fill="var(--excalidraw-color-1e1e1e, #1e1e1e)" text-anchor="middle" dominant-baseline="auto"><tspan x="1050.00" y="109.00">pi-tui</tspan><tspan x="1050.00" y="126.50">Differential rendering</tspan><tspan x="1050.00" y="144.00">ANSI-aware</tspan></text>
+<path d="M950.00 179.32 L1149.68 179.17 L1149.81 241.51 L951.88 238.99" fill="var(--excalidraw-color-ffec99, #ffec99)" stroke="none"></path>
+<path d="M950.77 178.61 C989.30 183.03,1029.67 179.97,1150.09 181.70 M950.24 179.97 C1014.59 179.33,1077.48 178.84,1149.36 179.36 M1149.05 181.76 C1149.93 194.21,1148.30 210.89,1150.86 238.96 M1150.47 180.01 C1150.06 192.65,1151.42 207.52,1150.10 239.28 M1149.81 240.72 C1102.49 242.50,1054.84 242.37,949.59 241.75 M1149.86 239.86 C1102.88 239.45,1054.47 239.39,950.08 240.56 M951.19 239.78 C948.38 222.95,950.39 202.44,950.88 181.91 M949.27 240.97 C950.83 224.80,950.42 209.71,950.61 180.82" stroke="var(--excalidraw-color-f08c00, #f08c00)" stroke-width="2" fill="none"></path>
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="14" fill="var(--excalidraw-color-1e1e1e, #1e1e1e)" text-anchor="middle" dominant-baseline="auto"><tspan x="1050.00" y="209.00">pi-web-ui</tspan><tspan x="1050.00" y="226.50">Lit components</tspan></text>
+<path d="M950.79 258.17 L1151.77 258.79 L1150.31 321.98 L949.73 318.05" fill="var(--excalidraw-color-ffec99, #ffec99)" stroke="none"></path>
+<path d="M948.72 260.35 C988.72 260.80,1028.66 259.73,1148.66 258.80 M950.88 260.45 C1022.12 261.04,1094.71 261.32,1150.12 260.72 M1148.12 258.26 C1148.77 278.77,1148.53 295.81,1149.64 321.22 M1149.06 260.41 C1149.73 281.14,1149.13 303.99,1150.92 319.99 M1151.71 320.33 C1098.08 322.12,1042.87 321.00,949.30 321.03 M1149.97 319.60 C1072.35 320.34,993.37 319.79,949.97 320.64 M949.75 319.22 C951.23 301.47,949.78 285.97,948.06 259.50 M949.71 320.97 C950.54 297.84,949.14 274.61,949.49 260.80" stroke="var(--excalidraw-color-f08c00, #f08c00)" stroke-width="2" fill="none"></path>
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="14" fill="var(--excalidraw-color-1e1e1e, #1e1e1e)" text-anchor="middle" dominant-baseline="auto"><tspan x="1050.00" y="289.00">pi-mom (Slack Bot)</tspan><tspan x="1050.00" y="306.50">Docker sandbox</tspan></text>
+<path d="M951.59 341.01 L1149.87 338.41 L1150.82 398.45 L951.59 401.12" fill="var(--excalidraw-color-ffec99, #ffec99)" stroke="none"></path>
+<path d="M950.26 338.48 C991.75 338.56,1031.26 339.48,1150.83 339.51 M949.71 339.12 C991.45 339.15,1031.95 340.21,1150.88 340.27 M1151.20 338.76 C1150.42 359.33,1147.55 380.73,1148.42 399.48 M1149.66 340.81 C1150.59 357.63,1150.03 376.46,1149.73 400.69 M1150.00 399.95 C1090.06 401.73,1030.90 399.64,949.00 400.30 M1150.07 399.34 C1081.83 399.43,1012.27 400.18,949.86 400.72 M948.31 398.65 C950.08 384.00,949.16 369.49,949.24 341.08 M950.14 400.97 C949.45 380.88,951.06 363.50,950.37 340.77" stroke="var(--excalidraw-color-f08c00, #f08c00)" stroke-width="2" fill="none"></path>
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="14" fill="var(--excalidraw-color-1e1e1e, #1e1e1e)" text-anchor="middle" dominant-baseline="auto"><tspan x="1050.00" y="369.00">pi-pods</tspan><tspan x="1050.00" y="386.50">vLLM GPU deploy</tspan></text>
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="14" fill="var(--excalidraw-color-f08c00, #f08c00)" text-anchor="middle" dominant-baseline="auto"><tspan x="1050.00" y="69.00">UI / Integration Layer</tspan></text>
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="20" fill="var(--excalidraw-color-1e1e1e, #1e1e1e)" text-anchor="middle" dominant-baseline="auto"><tspan x="500.00" y="550.00">Agent Loop 执行流程</tspan></text>
+<path d="M99.19 578.70 L280.05 581.65 L281.84 639.38 L101.29 639.25" fill="var(--excalidraw-color-a5d8ff, #a5d8ff)" stroke="none"></path>
+<path d="M99.72 578.17 C136.66 577.56,171.15 579.02,281.75 581.02 M99.08 580.09 C152.50 580.84,204.78 579.74,280.65 579.31 M279.34 579.76 C280.90 592.45,280.81 602.57,279.98 640.00 M280.85 579.62 C279.11 602.60,278.65 625.40,279.36 640.10 M280.21 639.09 C214.82 640.92,151.51 640.41,98.24 638.72 M280.30 640.69 C235.70 641.21,191.75 640.96,99.60 640.96 M99.43 641.53 C100.58 617.05,100.74 592.55,101.61 580.26 M99.01 640.96 C100.07 618.96,99.71 595.29,100.14 580.72" stroke="var(--excalidraw-color-1971c2, #1971c2)" stroke-width="2" fill="none"></path>
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="12" fill="var(--excalidraw-color-1e1e1e, #1e1e1e)" text-anchor="middle" dominant-baseline="auto"><tspan x="190.00" y="604.00">1. transformContext</tspan><tspan x="190.00" y="619.00">   裁剪/注入上下文</tspan></text>
+<path d="M286.43 610.10 C295.01 611.55,307.01 611.21,335.16 611.81 M284.78 610.61 C302.68 609.95,318.54 609.70,334.49 610.82" stroke="var(--excalidraw-color-1e1e1e, #1e1e1e)" stroke-width="2" fill="none"></path><path d="M322.88 617.00 L335.00 610.00 L322.88 603.00" fill="none" stroke="#1e1e1e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M340.39 578.96 L521.18 581.09 L520.60 640.09 L338.06 641.84" fill="var(--excalidraw-color-a5d8ff, #a5d8ff)" stroke="none"></path>
+<path d="M340.29 579.06 C377.71 579.76,411.48 580.53,521.37 580.20 M340.13 579.88 C404.35 579.75,467.10 578.94,519.91 580.57 M521.95 580.51 C519.17 597.29,521.15 609.95,518.15 639.40 M520.74 580.22 C518.80 603.33,519.42 625.10,519.58 640.16 M521.37 640.45 C483.44 642.28,443.53 640.15,341.75 639.51 M520.47 639.26 C453.44 639.82,385.15 640.76,339.41 640.09 M339.26 638.68 C338.86 622.84,341.82 607.83,341.39 578.64 M340.67 640.95 C340.23 624.52,339.39 608.64,340.46 580.69" stroke="var(--excalidraw-color-1971c2, #1971c2)" stroke-width="2" fill="none"></path>
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="12" fill="var(--excalidraw-color-1e1e1e, #1e1e1e)" text-anchor="middle" dominant-baseline="auto"><tspan x="430.00" y="604.00">2. convertToLlm</tspan><tspan x="430.00" y="619.00">   AgentMsg → LLM Msg</tspan></text>
+<path d="M523.00 610.99 C536.05 608.23,543.33 611.22,574.78 610.99 M525.84 610.41 C544.20 610.24,564.20 610.29,575.75 610.08" stroke="var(--excalidraw-color-1e1e1e, #1e1e1e)" stroke-width="2" fill="none"></path><path d="M562.88 617.00 L575.00 610.00 L562.88 603.00" fill="none" stroke="#1e1e1e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M581.59 579.23 L758.32 580.52 L759.36 640.79 L578.84 640.44" fill="var(--excalidraw-color-a5d8ff, #a5d8ff)" stroke="none"></path>
+<path d="M580.86 579.95 C614.75 581.95,651.80 582.05,760.99 579.38 M579.19 579.67 C620.20 578.66,659.42 578.14,759.17 579.83 M760.56 581.27 C760.23 598.13,760.29 617.33,760.33 638.79 M760.63 580.82 C758.50 602.07,760.18 626.81,759.80 640.22 M758.53 641.81 C716.07 639.64,667.56 639.88,581.26 640.30 M760.64 639.83 C705.19 638.43,650.55 638.55,579.23 639.21 M579.10 639.84 C581.13 620.63,578.89 603.12,581.16 581.02 M580.32 640.95 C579.60 618.08,580.27 597.98,580.78 580.65" stroke="var(--excalidraw-color-1971c2, #1971c2)" stroke-width="2" fill="none"></path>
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="12" fill="var(--excalidraw-color-1e1e1e, #1e1e1e)" text-anchor="middle" dominant-baseline="auto"><tspan x="670.00" y="604.00">3. stream()</tspan><tspan x="670.00" y="619.00">   LLM 流式响应</tspan></text>
+<path d="M668.58 646.88 C668.20 653.06,668.74 659.38,669.40 685.16 M669.89 645.20 C669.99 654.70,671.05 665.52,670.01 684.34" stroke="var(--excalidraw-color-1e1e1e, #1e1e1e)" stroke-width="2" fill="none"></path><path d="M663.00 672.88 L670.00 685.00 L677.00 672.88" fill="none" stroke="#1e1e1e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M668.79 689.49 L759.46 729.95 L668.12 771.49 L579.62 729.04" fill="var(--excalidraw-color-ffc9c9, #ffc9c9)" stroke="none"></path>
+<path d="M671.43 690.84 C687.96 697.69,706.28 705.11,760.60 728.55 M670.24 689.47 C694.43 699.64,720.63 712.74,760.43 729.09 M759.17 728.02 C728.85 746.04,694.57 760.57,668.50 768.18 M760.53 729.42 C725.39 745.10,689.17 761.05,670.02 770.27 M669.69 769.17 C642.09 758.35,616.11 744.90,580.77 731.09 M670.81 770.40 C649.79 760.87,629.45 753.02,579.05 730.34 M578.94 730.99 C612.27 715.08,646.84 698.63,670.94 689.41 M579.97 730.94 C601.55 720.92,623.39 711.41,669.10 690.62" stroke="var(--excalidraw-color-e03131, #e03131)" stroke-width="2" fill="none"></path>
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="12" fill="var(--excalidraw-color-1e1e1e, #1e1e1e)" text-anchor="middle" dominant-baseline="auto"><tspan x="670.00" y="732.00">有 tool call?</tspan></text>
+<path d="M574.15 728.77 C535.10 731.33,495.90 728.96,379.02 729.34 M575.95 730.00 C511.38 730.04,447.81 728.67,379.27 730.60" stroke="var(--excalidraw-color-2f9e44, #2f9e44)" stroke-width="2" fill="none"></path><path d="M392.12 723.00 L380.00 730.00 L392.12 737.00" fill="none" stroke="#2f9e44" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="12" fill="var(--excalidraw-color-2f9e44, #2f9e44)" text-anchor="middle" dominant-baseline="auto"><tspan x="520.00" y="724.00">Yes</tspan></text>
+<path d="M200.39 701.18 L379.64 699.20 L379.13 758.43 L199.32 761.17" fill="var(--excalidraw-color-b2f2bb, #b2f2bb)" stroke="none"></path>
+<path d="M200.86 700.70 C234.52 699.34,273.89 699.18,381.43 700.12 M199.65 700.53 C267.18 699.32,332.83 698.81,380.11 700.10 M381.32 699.02 C381.79 712.09,378.68 726.54,380.06 758.70 M379.72 700.23 C379.91 715.77,380.76 731.45,379.65 759.68 M379.90 758.32 C313.54 760.15,250.28 760.59,200.11 759.47 M379.04 759.83 C319.92 758.91,259.83 759.14,200.80 760.51 M200.06 759.87 C199.91 739.47,201.54 721.46,199.30 698.58 M200.85 760.94 C199.58 741.72,199.80 725.11,200.87 700.57" stroke="var(--excalidraw-color-2f9e44, #2f9e44)" stroke-width="2" fill="none"></path>
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="12" fill="var(--excalidraw-color-1e1e1e, #1e1e1e)" text-anchor="middle" dominant-baseline="auto"><tspan x="290.00" y="724.00">4. Execute tools</tspan><tspan x="290.00" y="739.00">   beforeHook → run → afterHook</tspan></text>
+<path d="M200.84 699.15 C184.24 699.44,116.16 717.56,99.18 701.11 C82.19 684.66,82.09 617.30,98.92 600.43 C115.75 583.56,183.21 600.15,200.15 599.91 M199.82 701.31 C183.70 701.35,117.89 716.74,101.46 699.57 C85.03 682.40,84.74 614.75,101.25 598.31 C117.75 581.88,184.13 600.88,200.48 600.96" stroke="var(--excalidraw-color-2f9e44, #2f9e44)" stroke-width="2" fill="none"></path><path d="M187.88 607.00 L200.00 600.00 L187.88 593.00" fill="none" stroke="#2f9e44" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="12" fill="var(--excalidraw-color-2f9e44, #2f9e44)" text-anchor="middle" dominant-baseline="auto"><tspan x="85.00" y="662.00">结果回注</tspan></text>
+<path d="M670.29 775.56 C671.13 783.53,669.52 791.81,668.26 816.69 M669.05 774.58 C670.53 784.71,670.40 796.09,669.79 814.11" stroke="var(--excalidraw-color-e03131, #e03131)" stroke-width="2" fill="none"></path><path d="M663.00 802.88 L670.00 815.00 L677.00 802.88" fill="none" stroke="#e03131" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="12" fill="var(--excalidraw-color-e03131, #e03131)" text-anchor="middle" dominant-baseline="auto"><tspan x="690.00" y="797.00"></tspan><tspan x="690.00" y="812.00">Pi Agent 架构总览 ^title</tspan><tspan x="690.00" y="827.00"></tspan><tspan x="690.00" y="842.00">Layer 4: pi-coding-agent (Domain) ^layer4-title</tspan><tspan x="690.00" y="857.00"></tspan><tspan x="690.00" y="872.00">AgentSession · SessionManager · ExtensionRunner Tools: read / write / edit / bash + grep / find / ls (read-only) Skills · Prompt Templates · Themes · Pi Packages ^layer4-desc</tspan><tspan x="690.00" y="887.00"></tspan><tspan x="690.00" y="902.00">Layer 3: pi-agent-core (Execution Engine) ^layer3-title</tspan><tspan x="690.00" y="917.00"></tspan><tspan x="690.00" y="932.00">Agent class · agentLoop (418 行) · AgentState Event-driven: subscribe → AgentEvent stream Steering (中途注入) · Follow-up (完成后追加) · 并行/串行 tool execution ^layer3-desc</tspan><tspan x="690.00" y="947.00"></tspan><tspan x="690.00" y="962.00">Layer 2: pi-ai (Unified LLM API) ^layer2-title</tspan><tspan x="690.00" y="977.00"></tspan><tspan x="690.00" y="992.00">stream() · MODELS registry · AuthStorage · 15+ providers (OpenAI / Anthropic / Gemini / Bedrock ...) ^layer2-desc</tspan><tspan x="690.00" y="1007.00"></tspan><tspan x="690.00" y="1022.00">Layer 1: pi-mono (Build / Infra / NPM Workspaces) ^layer1-title</tspan><tspan x="690.00" y="1037.00"></tspan><tspan x="690.00" y="1052.00">pi-tui Differential rendering ANSI-aware ^sidebar-tui-text</tspan><tspan x="690.00" y="1067.00"></tspan><tspan x="690.00" y="1082.00">pi-web-ui Lit components ^sidebar-webui-text</tspan><tspan x="690.00" y="1097.00"></tspan><tspan x="690.00" y="1112.00">pi-mom (Slack Bot) Docker sandbox ^sidebar-mom-text</tspan><tspan x="690.00" y="1127.00"></tspan><tspan x="690.00" y="1142.00">pi-pods vLLM GPU deploy ^sidebar-pods-text</tspan><tspan x="690.00" y="1157.00"></tspan><tspan x="690.00" y="1172.00">UI / Integration Layer ^sidebar-label</tspan><tspan x="690.00" y="1187.00"></tspan><tspan x="690.00" y="1202.00">Agent Loop 执行流程 ^loop-title</tspan><tspan x="690.00" y="1217.00"></tspan><tspan x="690.00" y="1232.00">1. transformContext    裁剪/注入上下文 ^step1-text</tspan><tspan x="690.00" y="1247.00"></tspan><tspan x="690.00" y="1262.00">2. convertToLlm    AgentMsg → LLM Msg ^step2-text</tspan><tspan x="690.00" y="1277.00"></tspan><tspan x="690.00" y="1292.00">3. stream()    LLM 流式响应 ^step3-text</tspan><tspan x="690.00" y="1307.00"></tspan><tspan x="690.00" y="1322.00">有 tool call? ^step4-text</tspan><tspan x="690.00" y="1337.00"></tspan><tspan x="690.00" y="1352.00">Yes ^yes-label</tspan><tspan x="690.00" y="1367.00"></tspan><tspan x="690.00" y="1382.00">4. Execute tools    beforeHook → run → afterHook ^step5-text</tspan><tspan x="690.00" y="1397.00"></tspan><tspan x="690.00" y="1412.00">结果回注 ^loop-label</tspan><tspan x="690.00" y="1427.00"></tspan><tspan x="690.00" y="1442.00">No</tspan></text>
+<path d="M578.79 821.71 L761.91 818.06 L760.66 869.83 L580.87 868.36" fill="#dee2e6" stroke="none"></path>
+<path d="M578.01 818.48 C616.60 819.73,650.54 822.21,760.67 818.48 M579.76 820.11 C632.88 820.74,687.47 820.81,760.62 820.62 M758.54 820.52 C759.96 838.43,761.00 854.60,760.40 871.49 M759.50 819.43 C759.28 834.51,760.26 847.41,760.09 869.79 M758.22 871.04 C714.79 872.88,666.32 870.05,579.13 871.05 M759.38 870.96 C689.41 869.73,620.63 870.33,580.44 870.76 M579.73 868.18 C579.21 859.51,578.45 846.96,578.86 819.34 M580.15 870.93 C580.00 855.63,579.25 841.36,579.51 820.50" stroke="var(--excalidraw-color-868e96, #868e96)" stroke-width="2" fill="none"></path>
+<text font-family="Virgil, Segoe UI Emoji, sans-serif" font-size="12" fill="var(--excalidraw-color-1e1e1e, #1e1e1e)" text-anchor="middle" dominant-baseline="auto"><tspan x="670.00" y="844.00">5. 输出结果 / 结束</tspan></text>
+</g>
+</svg></div><div class="excalidraw-overlays" data-viewbox-w="1197" data-viewbox-h="1465" data-offset-x="-41" data-offset-y="0"></div><script type="application/json" class="excalidraw-data">{"elements":[{"id":"title","type":"text","x":379.3760070800781,"y":20,"width":241.24798583984375,"height":35,"text":"Pi Agent 架构总览","fontSize":28,"fontFamily":1,"textAlign":"center","strokeColor":"#1e1e1e","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":1,"version":2,"versionNonce":1353552950,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"containerId":null,"originalText":"Pi Agent 架构总览","lineHeight":1.25,"baseline":32,"autoResize":true,"index":"a0","strokeStyle":"solid","frameId":null,"hasTextLink":false,"rawText":"","verticalAlign":"top"},{"id":"layer4-box","type":"rectangle","x":100,"y":80,"width":800,"height":100,"strokeColor":"#e03131","backgroundColor":"#ffc9c9","fillStyle":"solid","strokeWidth":2,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":{"type":3},"seed":2,"version":2,"versionNonce":164459050,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"index":"a1","strokeStyle":"solid","frameId":null,"hasTextLink":false},{"id":"ZyJeGAKu","type":"text","x":120,"y":90,"width":260.1600036621094,"height":20,"text":"Layer 4: pi-coding-agent (Domain)","fontSize":16,"fontFamily":1,"textAlign":"left","strokeColor":"#e03131","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":3,"version":2,"versionNonce":1503239542,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"containerId":null,"originalText":"Layer 4: pi-coding-agent (Domain)","lineHeight":1.25,"baseline":20,"autoResize":true,"index":"a2","strokeStyle":"solid","frameId":null,"hasTextLink":false,"rawText":"","verticalAlign":"top"},{"id":"chY0Jlyq","type":"text","x":120,"y":120,"width":439.99200439453125,"height":52.5,"text":"AgentSession · SessionManager · ExtensionRunner\nTools: read / write / edit / bash + grep / find / ls (read-only)\nSkills · Prompt Templates · Themes · Pi Packages","fontSize":14,"fontFamily":1,"textAlign":"left","strokeColor":"#1e1e1e","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":4,"version":2,"versionNonce":1550949610,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"containerId":null,"originalText":"AgentSession · SessionManager · ExtensionRunner\nTools: read / write / edit / bash + grep / find / ls (read-only)\nSkills · Prompt Templates · Themes · Pi Packages","lineHeight":1.25,"baseline":40,"autoResize":true,"index":"a3","strokeStyle":"solid","frameId":null,"hasTextLink":false,"rawText":"","verticalAlign":"top"},{"id":"layer3-box","type":"rectangle","x":100,"y":200,"width":800,"height":100,"strokeColor":"#2f9e44","backgroundColor":"#b2f2bb","fillStyle":"solid","strokeWidth":2,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":{"type":3},"seed":5,"version":2,"versionNonce":313687734,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"index":"a4","strokeStyle":"solid","frameId":null,"hasTextLink":false},{"id":"r5yhvIGH","type":"text","x":120,"y":210,"width":323.7599792480469,"height":20,"text":"Layer 3: pi-agent-core (Execution Engine)","fontSize":16,"fontFamily":1,"textAlign":"left","strokeColor":"#2f9e44","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":6,"version":2,"versionNonce":113405866,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"containerId":null,"originalText":"Layer 3: pi-agent-core (Execution Engine)","lineHeight":1.25,"baseline":20,"autoResize":true,"index":"a5","strokeStyle":"solid","frameId":null,"hasTextLink":false,"rawText":"","verticalAlign":"top"},{"id":"gbHDpSAb","type":"text","x":120,"y":240,"width":479.7799987792969,"height":52.5,"text":"Agent class · agentLoop (418 行) · AgentState\nEvent-driven: subscribe → AgentEvent stream\nSteering (中途注入) · Follow-up (完成后追加) · 并行/串行 tool execution","fontSize":14,"fontFamily":1,"textAlign":"left","strokeColor":"#1e1e1e","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":7,"version":2,"versionNonce":278738934,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"containerId":null,"originalText":"Agent class · agentLoop (418 行) · AgentState\nEvent-driven: subscribe → AgentEvent stream\nSteering (中途注入) · Follow-up (完成后追加) · 并行/串行 tool execution","lineHeight":1.25,"baseline":40,"autoResize":true,"index":"a6","strokeStyle":"solid","frameId":null,"hasTextLink":false,"rawText":"","verticalAlign":"top"},{"id":"layer2-box","type":"rectangle","x":100,"y":320,"width":800,"height":80,"strokeColor":"#1971c2","backgroundColor":"#a5d8ff","fillStyle":"solid","strokeWidth":2,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":{"type":3},"seed":8,"version":2,"versionNonce":1022028394,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"index":"a7","strokeStyle":"solid","frameId":null,"hasTextLink":false},{"id":"2NMiFqaH","type":"text","x":120,"y":330,"width":255.60000610351562,"height":20,"text":"Layer 2: pi-ai (Unified LLM API)","fontSize":16,"fontFamily":1,"textAlign":"left","strokeColor":"#1971c2","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":9,"version":2,"versionNonce":190761270,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"containerId":null,"originalText":"Layer 2: pi-ai (Unified LLM API)","lineHeight":1.25,"baseline":20,"autoResize":true,"index":"a8","strokeStyle":"solid","frameId":null,"hasTextLink":false,"rawText":"","verticalAlign":"top"},{"id":"TFNTf6rX","type":"text","x":120,"y":360,"width":706.8179931640625,"height":17.5,"text":"stream() · MODELS registry · AuthStorage · 15+ providers (OpenAI / Anthropic / Gemini / Bedrock ...)","fontSize":14,"fontFamily":1,"textAlign":"left","strokeColor":"#1e1e1e","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":10,"version":148,"versionNonce":1096245290,"isDeleted":false,"boundElements":[],"updated":1779955946275,"link":null,"locked":false,"containerId":null,"originalText":"stream() · MODELS registry · AuthStorage · 15+ providers (OpenAI / Anthropic / Gemini / Bedrock ...)","lineHeight":1.25,"baseline":20,"autoResize":true,"index":"a9","strokeStyle":"solid","frameId":null,"hasTextLink":false,"rawText":"","verticalAlign":"top"},{"id":"layer1-box","type":"rectangle","x":100,"y":420,"width":800,"height":60,"strokeColor":"#868e96","backgroundColor":"#dee2e6","fillStyle":"solid","strokeWidth":2,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":{"type":3},"seed":11,"version":2,"versionNonce":1918644854,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"index":"aA","strokeStyle":"solid","frameId":null,"hasTextLink":false},{"id":"bfj4kvi4","type":"text","x":120,"y":435,"width":397.3279724121094,"height":20,"text":"Layer 1: pi-mono (Build / Infra / NPM Workspaces)","fontSize":16,"fontFamily":1,"textAlign":"left","strokeColor":"#868e96","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":12,"version":2,"versionNonce":378460138,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"containerId":null,"originalText":"Layer 1: pi-mono (Build / Infra / NPM Workspaces)","lineHeight":1.25,"baseline":20,"autoResize":true,"index":"aB","strokeStyle":"solid","frameId":null,"hasTextLink":false,"rawText":"","verticalAlign":"top"},{"id":"sidebar-tui","type":"rectangle","x":950,"y":80,"width":200,"height":80,"strokeColor":"#f08c00","backgroundColor":"#ffec99","fillStyle":"solid","strokeWidth":2,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":{"type":3},"seed":13,"version":2,"versionNonce":5927862,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"index":"aC","strokeStyle":"solid","frameId":null,"hasTextLink":false},{"id":"AW1rdn8Q","type":"text","x":977.5290069580078,"y":95,"width":144.94198608398438,"height":52.5,"text":"pi-tui\nDifferential rendering\nANSI-aware","fontSize":14,"fontFamily":1,"textAlign":"center","strokeColor":"#1e1e1e","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":14,"version":2,"versionNonce":528501418,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"containerId":null,"originalText":"pi-tui\nDifferential rendering\nANSI-aware","lineHeight":1.25,"baseline":45,"autoResize":true,"index":"aD","strokeStyle":"solid","frameId":null,"hasTextLink":false,"rawText":"","verticalAlign":"top"},{"id":"sidebar-webui","type":"rectangle","x":950,"y":180,"width":200,"height":60,"strokeColor":"#f08c00","backgroundColor":"#ffec99","fillStyle":"solid","strokeWidth":2,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":{"type":3},"seed":15,"version":2,"versionNonce":1333693686,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"index":"aE","strokeStyle":"solid","frameId":null,"hasTextLink":false},{"id":"goj2S2JF","type":"text","x":999.544002532959,"y":195,"width":100.91199493408203,"height":35,"text":"pi-web-ui\nLit components","fontSize":14,"fontFamily":1,"textAlign":"center","strokeColor":"#1e1e1e","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":16,"version":2,"versionNonce":1463117162,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"containerId":null,"originalText":"pi-web-ui\nLit components","lineHeight":1.25,"baseline":25,"autoResize":true,"index":"aF","strokeStyle":"solid","frameId":null,"hasTextLink":false,"rawText":"","verticalAlign":"top"},{"id":"sidebar-mom","type":"rectangle","x":950,"y":260,"width":200,"height":60,"strokeColor":"#f08c00","backgroundColor":"#ffec99","fillStyle":"solid","strokeWidth":2,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":{"type":3},"seed":17,"version":2,"versionNonce":1833795126,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"index":"aG","strokeStyle":"solid","frameId":null,"hasTextLink":false},{"id":"xcviO1Gp","type":"text","x":986.5170021057129,"y":275,"width":126.96599578857422,"height":35,"text":"pi-mom (Slack Bot)\nDocker sandbox","fontSize":14,"fontFamily":1,"textAlign":"center","strokeColor":"#1e1e1e","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":18,"version":2,"versionNonce":1996040234,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"containerId":null,"originalText":"pi-mom (Slack Bot)\nDocker sandbox","lineHeight":1.25,"baseline":25,"autoResize":true,"index":"aH","strokeStyle":"solid","frameId":null,"hasTextLink":false,"rawText":"","verticalAlign":"top"},{"id":"sidebar-pods","type":"rectangle","x":950,"y":340,"width":200,"height":60,"strokeColor":"#f08c00","backgroundColor":"#ffec99","fillStyle":"solid","strokeWidth":2,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":{"type":3},"seed":19,"version":2,"versionNonce":1856784246,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"index":"aI","strokeStyle":"solid","frameId":null,"hasTextLink":false},{"id":"GVv5BERS","type":"text","x":990.1780014038086,"y":355,"width":119.64399719238281,"height":35,"text":"pi-pods\nvLLM GPU deploy","fontSize":14,"fontFamily":1,"textAlign":"center","strokeColor":"#1e1e1e","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":20,"version":2,"versionNonce":1454805738,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"containerId":null,"originalText":"pi-pods\nvLLM GPU deploy","lineHeight":1.25,"baseline":25,"autoResize":true,"index":"aJ","strokeStyle":"solid","frameId":null,"hasTextLink":false,"rawText":"","verticalAlign":"top"},{"id":"ZxmZ15Wu","type":"text","x":969.5139999389648,"y":55,"width":160.9720001220703,"height":17.5,"text":"UI / Integration Layer","fontSize":14,"fontFamily":1,"textAlign":"center","strokeColor":"#f08c00","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":21,"version":2,"versionNonce":65005750,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"containerId":null,"originalText":"UI / Integration Layer","lineHeight":1.25,"baseline":15,"autoResize":true,"index":"aK","strokeStyle":"solid","frameId":null,"hasTextLink":false,"rawText":"","verticalAlign":"top"},{"id":"ETXZ7mKF","type":"text","x":400.63999938964844,"y":530,"width":198.72000122070312,"height":25,"text":"Agent Loop 执行流程","fontSize":20,"fontFamily":1,"textAlign":"center","strokeColor":"#1e1e1e","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":22,"version":2,"versionNonce":418948522,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"containerId":null,"originalText":"Agent Loop 执行流程","lineHeight":1.25,"baseline":25,"autoResize":true,"index":"aL","strokeStyle":"solid","frameId":null,"hasTextLink":false,"rawText":"","verticalAlign":"top"},{"id":"step1","type":"rectangle","x":100,"y":580,"width":180,"height":60,"strokeColor":"#1971c2","backgroundColor":"#a5d8ff","fillStyle":"solid","strokeWidth":2,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":{"type":3},"seed":23,"version":2,"versionNonce":210592246,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"index":"aM","strokeStyle":"solid","frameId":null,"hasTextLink":false},{"id":"nsKcZJiv","type":"text","x":131.65600204467773,"y":592,"width":116.68799591064453,"height":30,"text":"1. transformContext\n   裁剪/注入上下文","fontSize":12,"fontFamily":1,"textAlign":"center","strokeColor":"#1e1e1e","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":24,"version":2,"versionNonce":1458200682,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"containerId":null,"originalText":"1. transformContext\n   裁剪/注入上下文","lineHeight":1.25,"baseline":30,"autoResize":true,"index":"aN","strokeStyle":"solid","frameId":null,"hasTextLink":false,"rawText":"","verticalAlign":"top"},{"id":"arrow1","type":"arrow","x":285,"y":610,"width":50,"height":0,"strokeColor":"#1e1e1e","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":2,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":{"type":2},"seed":25,"version":2,"versionNonce":733590326,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"points":[[0,0],[50,0]],"lastCommittedPoint":null,"startBinding":null,"endBinding":null,"startArrowhead":null,"endArrowhead":"arrow","index":"aO","strokeStyle":"solid","frameId":null,"hasTextLink":false},{"id":"step2","type":"rectangle","x":340,"y":580,"width":180,"height":60,"strokeColor":"#1971c2","backgroundColor":"#a5d8ff","fillStyle":"solid","strokeWidth":2,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":{"type":3},"seed":26,"version":2,"versionNonce":1280754474,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"index":"aP","strokeStyle":"solid","frameId":null,"hasTextLink":false},{"id":"fmvRMocv","type":"text","x":356.07999420166016,"y":592,"width":147.8400115966797,"height":30,"text":"2. convertToLlm\n   AgentMsg → LLM Msg","fontSize":12,"fontFamily":1,"textAlign":"center","strokeColor":"#1e1e1e","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":27,"version":2,"versionNonce":1539955830,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"containerId":null,"originalText":"2. convertToLlm\n   AgentMsg → LLM Msg","lineHeight":1.25,"baseline":30,"autoResize":true,"index":"aQ","strokeStyle":"solid","frameId":null,"hasTextLink":false,"rawText":"","verticalAlign":"top"},{"id":"arrow2","type":"arrow","x":525,"y":610,"width":50,"height":0,"strokeColor":"#1e1e1e","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":2,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":{"type":2},"seed":28,"version":2,"versionNonce":61394410,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"points":[[0,0],[50,0]],"lastCommittedPoint":null,"startBinding":null,"endBinding":null,"startArrowhead":null,"endArrowhead":"arrow","index":"aR","strokeStyle":"solid","frameId":null,"hasTextLink":false},{"id":"step3","type":"rectangle","x":580,"y":580,"width":180,"height":60,"strokeColor":"#1971c2","backgroundColor":"#a5d8ff","fillStyle":"solid","strokeWidth":2,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":{"type":3},"seed":29,"version":2,"versionNonce":42130870,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"index":"aS","strokeStyle":"solid","frameId":null,"hasTextLink":false},{"id":"uT1dXGw7","type":"text","x":622.2159996032715,"y":592,"width":95.56800079345703,"height":30,"text":"3. stream()\n   LLM 流式响应","fontSize":12,"fontFamily":1,"textAlign":"center","strokeColor":"#1e1e1e","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":30,"version":2,"versionNonce":32211114,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"containerId":null,"originalText":"3. stream()\n   LLM 流式响应","lineHeight":1.25,"baseline":30,"autoResize":true,"index":"aT","strokeStyle":"solid","frameId":null,"hasTextLink":false,"rawText":"","verticalAlign":"top"},{"id":"arrow3","type":"arrow","x":670,"y":645,"width":0,"height":40,"strokeColor":"#1e1e1e","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":2,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":{"type":2},"seed":31,"version":2,"versionNonce":84522742,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"points":[[0,0],[0,40]],"lastCommittedPoint":null,"startBinding":null,"endBinding":null,"startArrowhead":null,"endArrowhead":"arrow","index":"aU","strokeStyle":"solid","frameId":null,"hasTextLink":false},{"id":"step4","type":"diamond","x":580,"y":690,"width":180,"height":80,"strokeColor":"#e03131","backgroundColor":"#ffc9c9","fillStyle":"solid","strokeWidth":2,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":{"type":2},"seed":32,"version":2,"versionNonce":1925831530,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"index":"aV","strokeStyle":"solid","frameId":null,"hasTextLink":false},{"id":"qxd2N0Bf","type":"text","x":633.4180030822754,"y":720,"width":73.16399383544922,"height":15,"text":"有 tool call?","fontSize":12,"fontFamily":1,"textAlign":"center","strokeColor":"#1e1e1e","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":33,"version":2,"versionNonce":1541630006,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"containerId":null,"originalText":"有 tool call?","lineHeight":1.25,"baseline":15,"autoResize":true,"index":"aW","strokeStyle":"solid","frameId":null,"hasTextLink":false,"rawText":"","verticalAlign":"top"},{"id":"arrow4-yes","type":"arrow","x":575,"y":730,"width":195,"height":0,"strokeColor":"#2f9e44","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":2,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":{"type":2},"seed":34,"version":2,"versionNonce":1418649130,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"points":[[0,0],[-195,0]],"lastCommittedPoint":null,"startBinding":null,"endBinding":null,"startArrowhead":null,"endArrowhead":"arrow","index":"aX","strokeStyle":"solid","frameId":null,"hasTextLink":false},{"id":"nDLdIFxo","type":"text","x":510.36400032043457,"y":712,"width":19.27199935913086,"height":15,"text":"Yes","fontSize":12,"fontFamily":1,"textAlign":"center","strokeColor":"#2f9e44","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":35,"version":2,"versionNonce":653586806,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"containerId":null,"originalText":"Yes","lineHeight":1.25,"baseline":12,"autoResize":true,"index":"aY","strokeStyle":"solid","frameId":null,"hasTextLink":false,"rawText":"","verticalAlign":"top"},{"id":"step5","type":"rectangle","x":200,"y":700,"width":180,"height":60,"strokeColor":"#2f9e44","backgroundColor":"#b2f2bb","fillStyle":"solid","strokeWidth":2,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":{"type":3},"seed":36,"version":2,"versionNonce":606439658,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"index":"aZ","strokeStyle":"solid","frameId":null,"hasTextLink":false},{"id":"DTOOoLRn","type":"text","x":187.85601043701172,"y":712,"width":204.28797912597656,"height":30,"text":"4. Execute tools\n   beforeHook → run → afterHook","fontSize":12,"fontFamily":1,"textAlign":"center","strokeColor":"#1e1e1e","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":37,"version":2,"versionNonce":1099125430,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"containerId":null,"originalText":"4. Execute tools\n   beforeHook → run → afterHook","lineHeight":1.25,"baseline":30,"autoResize":true,"index":"aa","strokeStyle":"solid","frameId":null,"hasTextLink":false,"rawText":"","verticalAlign":"top"},{"id":"arrow-loop","type":"arrow","x":200,"y":700,"width":100,"height":100,"strokeColor":"#2f9e44","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":2,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":{"type":2},"seed":38,"version":2,"versionNonce":152624042,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"points":[[0,0],[-100,0],[-100,-100],[0,-100]],"lastCommittedPoint":null,"startBinding":null,"endBinding":null,"startArrowhead":null,"endArrowhead":"arrow","index":"ab","strokeStyle":"solid","frameId":null,"hasTextLink":false},{"id":"FVqR8vyB","type":"text","x":61,"y":650,"width":48,"height":15,"text":"结果回注","fontSize":12,"fontFamily":1,"textAlign":"center","strokeColor":"#2f9e44","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":39,"version":2,"versionNonce":1446218742,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"containerId":null,"originalText":"结果回注","lineHeight":1.25,"baseline":12,"autoResize":true,"index":"ac","strokeStyle":"solid","frameId":null,"hasTextLink":false,"rawText":"","verticalAlign":"top"},{"id":"arrow4-no","type":"arrow","x":670,"y":775,"width":0,"height":40,"strokeColor":"#e03131","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":2,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":{"type":2},"seed":40,"version":2,"versionNonce":26465898,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"points":[[0,0],[0,40]],"lastCommittedPoint":null,"startBinding":null,"endBinding":null,"startArrowhead":null,"endArrowhead":"arrow","index":"ad","strokeStyle":"solid","frameId":null,"hasTextLink":false},{"id":"no-label","type":"text","x":162.46771240234375,"y":785,"width":1055.0645751953125,"height":660,"text":"\nPi Agent 架构总览 ^title\n\nLayer 4: pi-coding-agent (Domain) ^layer4-title\n\nAgentSession · SessionManager · ExtensionRunner Tools: read / write / edit / bash + grep / find / ls (read-only) Skills · Prompt Templates · Themes · Pi Packages ^layer4-desc\n\nLayer 3: pi-agent-core (Execution Engine) ^layer3-title\n\nAgent class · agentLoop (418 行) · AgentState Event-driven: subscribe → AgentEvent stream Steering (中途注入) · Follow-up (完成后追加) · 并行/串行 tool execution ^layer3-desc\n\nLayer 2: pi-ai (Unified LLM API) ^layer2-title\n\nstream() · MODELS registry · AuthStorage · 15+ providers (OpenAI / Anthropic / Gemini / Bedrock ...) ^layer2-desc\n\nLayer 1: pi-mono (Build / Infra / NPM Workspaces) ^layer1-title\n\npi-tui Differential rendering ANSI-aware ^sidebar-tui-text\n\npi-web-ui Lit components ^sidebar-webui-text\n\npi-mom (Slack Bot) Docker sandbox ^sidebar-mom-text\n\npi-pods vLLM GPU deploy ^sidebar-pods-text\n\nUI / Integration Layer ^sidebar-label\n\nAgent Loop 执行流程 ^loop-title\n\n1. transformContext    裁剪/注入上下文 ^step1-text\n\n2. convertToLlm    AgentMsg → LLM Msg ^step2-text\n\n3. stream()    LLM 流式响应 ^step3-text\n\n有 tool call? ^step4-text\n\nYes ^yes-label\n\n4. Execute tools    beforeHook → run → afterHook ^step5-text\n\n结果回注 ^loop-label\n\nNo","fontSize":12,"fontFamily":1,"textAlign":"center","strokeColor":"#e03131","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":41,"version":2,"versionNonce":1930075446,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"containerId":null,"originalText":"\nPi Agent 架构总览 ^title\n\nLayer 4: pi-coding-agent (Domain) ^layer4-title\n\nAgentSession · SessionManager · ExtensionRunner Tools: read / write / edit / bash + grep / find / ls (read-only) Skills · Prompt Templates · Themes · Pi Packages ^layer4-desc\n\nLayer 3: pi-agent-core (Execution Engine) ^layer3-title\n\nAgent class · agentLoop (418 行) · AgentState Event-driven: subscribe → AgentEvent stream Steering (中途注入) · Follow-up (完成后追加) · 并行/串行 tool execution ^layer3-desc\n\nLayer 2: pi-ai (Unified LLM API) ^layer2-title\n\nstream() · MODELS registry · AuthStorage · 15+ providers (OpenAI / Anthropic / Gemini / Bedrock ...) ^layer2-desc\n\nLayer 1: pi-mono (Build / Infra / NPM Workspaces) ^layer1-title\n\npi-tui Differential rendering ANSI-aware ^sidebar-tui-text\n\npi-web-ui Lit components ^sidebar-webui-text\n\npi-mom (Slack Bot) Docker sandbox ^sidebar-mom-text\n\npi-pods vLLM GPU deploy ^sidebar-pods-text\n\nUI / Integration Layer ^sidebar-label\n\nAgent Loop 执行流程 ^loop-title\n\n1. transformContext    裁剪/注入上下文 ^step1-text\n\n2. convertToLlm    AgentMsg → LLM Msg ^step2-text\n\n3. stream()    LLM 流式响应 ^step3-text\n\n有 tool call? ^step4-text\n\nYes ^yes-label\n\n4. Execute tools    beforeHook → run → afterHook ^step5-text\n\n结果回注 ^loop-label\n\nNo","lineHeight":1.25,"baseline":12,"autoResize":true,"rawText":"\nPi Agent 架构总览 ^title\n\nLayer 4: pi-coding-agent (Domain) ^layer4-title\n\nAgentSession · SessionManager · ExtensionRunner Tools: read / write / edit / bash + grep / find / ls (read-only) Skills · Prompt Templates · Themes · Pi Packages ^layer4-desc\n\nLayer 3: pi-agent-core (Execution Engine) ^layer3-title\n\nAgent class · agentLoop (418 行) · AgentState Event-driven: subscribe → AgentEvent stream Steering (中途注入) · Follow-up (完成后追加) · 并行/串行 tool execution ^layer3-desc\n\nLayer 2: pi-ai (Unified LLM API) ^layer2-title\n\nstream() · MODELS registry · AuthStorage · 15+ providers (OpenAI / Anthropic / Gemini / Bedrock ...) ^layer2-desc\n\nLayer 1: pi-mono (Build / Infra / NPM Workspaces) ^layer1-title\n\npi-tui Differential rendering ANSI-aware ^sidebar-tui-text\n\npi-web-ui Lit components ^sidebar-webui-text\n\npi-mom (Slack Bot) Docker sandbox ^sidebar-mom-text\n\npi-pods vLLM GPU deploy ^sidebar-pods-text\n\nUI / Integration Layer ^sidebar-label\n\nAgent Loop 执行流程 ^loop-title\n\n1. transformContext    裁剪/注入上下文 ^step1-text\n\n2. convertToLlm    AgentMsg → LLM Msg ^step2-text\n\n3. stream()    LLM 流式响应 ^step3-text\n\n有 tool call? ^step4-text\n\nYes ^yes-label\n\n4. Execute tools    beforeHook → run → afterHook ^step5-text\n\n结果回注 ^loop-label\n\nNo","hasTextLink":false,"index":"ae","strokeStyle":"solid","frameId":null,"verticalAlign":"top"},{"id":"step-done","type":"rectangle","x":580,"y":820,"width":180,"height":50,"strokeColor":"#868e96","backgroundColor":"#dee2e6","fillStyle":"solid","strokeWidth":2,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":{"type":3},"seed":42,"version":2,"versionNonce":241269034,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"index":"af","strokeStyle":"solid","frameId":null,"hasTextLink":false},{"id":"5i6MG6Sg","type":"text","x":616.6479988098145,"y":832,"width":106.7040023803711,"height":15,"text":"5. 输出结果 / 结束","fontSize":12,"fontFamily":1,"textAlign":"center","strokeColor":"#1e1e1e","backgroundColor":"transparent","fillStyle":"solid","strokeWidth":1,"roughness":1,"opacity":100,"angle":0,"groupIds":[],"roundness":null,"seed":43,"version":2,"versionNonce":493717110,"isDeleted":false,"boundElements":[],"updated":1779955936848,"link":null,"locked":false,"containerId":null,"originalText":"5. 输出结果 / 结束","lineHeight":1.25,"baseline":20,"autoResize":true,"index":"ag","strokeStyle":"solid","frameId":null,"hasTextLink":false,"rawText":"","verticalAlign":"top"}],"appState":{"viewBackgroundColor":"#ffffff","exportBackground":true,"exportWithDarkMode":false,"theme":"light","currentItemStrokeColor":"#1e1e1e","currentItemBackgroundColor":"transparent","currentItemFillStyle":"solid","currentItemStrokeWidth":2,"currentItemStrokeStyle":"solid","currentItemRoughness":1,"currentItemOpacity":100,"currentItemFontFamily":5,"currentItemFontSize":20,"currentItemTextAlign":"left","currentItemStartArrowhead":null,"currentItemEndArrowhead":"arrow","currentItemArrowType":"round","currentItemFrameRole":null,"scrollX":-30.564207626368102,"scrollY":320.9156794948053,"zoom":{"value":0.359782},"currentItemRoundness":"round","gridSize":20,"gridStep":5,"gridModeEnabled":false,"gridColor":{"Bold":"rgba(217, 217, 217, 0.5)","Regular":"rgba(230, 230, 230, 0.5)"},"currentStrokeOptions":null,"frameRendering":{"enabled":true,"clip":true,"name":true,"outline":true,"markerName":true,"markerEnabled":true},"objectsSnapModeEnabled":false,"activeTool":{"type":"selection","customType":null,"locked":false,"fromSelection":false,"lastActiveTool":null},"disableContextMenu":false,"bindingPreference":"enabled","isBindingEnabled":true,"isMidpointSnappingEnabled":true,"boxSelectionMode":"contain"},"files":{}}</script></article><a href="../attachments/2026-05-28-pi-agent-学习笔记/pi-agent-architecture.excalidraw" class="internal internal-link transclude-src">指向原始笔记的链接</a></blockquote><p></p>
+<p>Pi 采用 4 层 monorepo 架构（NPM Workspaces），从底到顶：</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>层</th><th>包名</th><th>职责</th></tr></thead><tbody><tr><td>1</td><td><code>pi-mono</code></td><td>构建基础设施</td></tr><tr><td>2</td><td><code>pi-ai</code></td><td>统一 LLM API，15+ provider（OpenAI / Anthropic / Gemini / Bedrock 等），300+ 模型</td></tr><tr><td>3</td><td><code>pi-agent-core</code></td><td>Agent 执行引擎：Agent class、agentLoop、事件流、状态管理</td></tr><tr><td>4</td><td><code>pi-coding-agent</code></td><td>领域实现：CLI（<code>pi</code> 命令）、Session、工具集、扩展加载</td></tr></tbody></table></div>
+<p>旁路包：</p>
+<ul>
+<li><strong>pi-tui</strong> — 终端 UI 库，差分渲染（只刷新变化部分），ANSI-aware</li>
+<li><strong>pi-web-ui</strong> — Lit web components，聊天面板 + artifact sandbox</li>
+<li><strong>pi-mom</strong> — Slack Bot，Docker sandbox 中安全执行</li>
+<li><strong>pi-pods</strong> — vLLM GPU 部署管理（RunPod / DataCrunch）</li>
+</ul>
+<h2 id="agent-loop">Agent Loop<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#agent-loop" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>核心循环在 <code>packages/agent/src/agent-loop.ts</code>，~418 行。执行流程：</p>
+<pre><button class="expand-button" aria-label="Expand mermaid diagram" data-view-component="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M3.72 3.72a.75.75 0 011.06 1.06L2.56 7h10.88l-2.22-2.22a.75.75 0 011.06-1.06l3.5 3.5a.75.75 0 010 1.06l-3.5 3.5a.75.75 0 11-1.06-1.06l2.22-2.22H2.56l2.22 2.22a.75.75 0 11-1.06 1.06l-3.5-3.5a.75.75 0 010-1.06l3.5-3.5z"></path></svg></button><code class="mermaid" data-clipboard="&quot;flowchart TD\n    A[用户输入] --> B[transformContext\\n裁剪历史 / 注入外部数据]\n    B --> C[convertToLlm\\nAgentMessage → 标准 LLM Message]\n    C --> D[stream\\n调用 LLM 流式响应]\n    D --> E{响应含\\ntool call?}\n    E -- Yes --> F[beforeToolCall\\n参数校验 / 可 block]\n    F --> G[执行 tools\\n并行 Promise.all 或串行]\n    G --> H[afterToolCall\\n可覆盖结果]\n    H --> I{检查 steering\\n消息队列}\n    I -- 有 steering --> B\n    I -- 无 steering --> D\n    E -- No --> J{有 follow-up\\n消息?}\n    J -- Yes --> B\n    J -- No --> K[输出结果 / 结束]\n\n    style A fill:#a5d8ff,stroke:#1971c2\n    style D fill:#a5d8ff,stroke:#1971c2\n    style E fill:#ffc9c9,stroke:#e03131\n    style G fill:#b2f2bb,stroke:#2f9e44\n    style K fill:#dee2e6,stroke:#868e96&quot;">flowchart TD
+    A[用户输入] --> B[transformContext\n裁剪历史 / 注入外部数据]
+    B --> C[convertToLlm\nAgentMessage → 标准 LLM Message]
+    C --> D[stream\n调用 LLM 流式响应]
+    D --> E{响应含\ntool call?}
+    E -- Yes --> F[beforeToolCall\n参数校验 / 可 block]
+    F --> G[执行 tools\n并行 Promise.all 或串行]
+    G --> H[afterToolCall\n可覆盖结果]
+    H --> I{检查 steering\n消息队列}
+    I -- 有 steering --> B
+    I -- 无 steering --> D
+    E -- No --> J{有 follow-up\n消息?}
+    J -- Yes --> B
+    J -- No --> K[输出结果 / 结束]
+
+    style A fill:#a5d8ff,stroke:#1971c2
+    style D fill:#a5d8ff,stroke:#1971c2
+    style E fill:#ffc9c9,stroke:#e03131
+    style G fill:#b2f2bb,stroke:#2f9e44
+    style K fill:#dee2e6,stroke:#868e96
+</code><div id="mermaid-container" role="dialog"><div id="mermaid-space"><div class="mermaid-content"></div></div></div></pre>
+<h3 id="关键机制">关键机制<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#关键机制" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p><strong>消息生命周期</strong></p>
+<p><code>AgentMessage</code> 是富类型（支持 <code>user</code> / <code>assistant</code> / <code>toolResult</code> + 自定义类型），发送给 LLM 前经过两步管线：</p>
+<ol>
+<li><code>transformContext</code> — 可选 hook，裁剪历史或注入外部数据（RAG、系统状态）</li>
+<li><code>convertToLlm</code> — 过滤 UI-only 消息，转成标准 LLM 角色</li>
+</ol>
+<p><strong>Tool 执行模式</strong></p>
+<ul>
+<li><strong>并行（默认）</strong>：先串行校验参数确保状态一致，然后 <code>Promise.all</code> 并发执行，事件按原始顺序 emit</li>
+<li><strong>串行</strong>：逐个执行</li>
+</ul>
+<p><strong>Steering &amp; Follow-up</strong></p>
+<ul>
+<li>Steering — agent 执行中途注入消息（例如用户中断补充指令），每个 turn 开头检查
+<ul>
+<li><code>all</code> 模式：一次注入全部</li>
+<li><code>one-at-a-time</code>：每 turn 注入一条</li>
+</ul>
+</li>
+<li>Follow-up — agent 完成后追加任务（自动清理、二级任务等）</li>
+</ul>
+<p><strong>Tool Hooks</strong></p>
+<ul>
+<li><code>beforeToolCall</code> — 参数校验后、执行前。可返回 <code>{ block: true }</code> 阻止执行</li>
+<li><code>afterToolCall</code> — 执行后。可覆盖 <code>content</code> / <code>details</code> / <code>isError</code></li>
+</ul>
+<h2 id="工具系统">工具系统<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#工具系统" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>两个工具集：</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>集合</th><th>工具</th><th>用途</th></tr></thead><tbody><tr><td><code>codingTools</code></td><td><code>read</code>, <code>bash</code>, <code>edit</code>, <code>write</code></td><td>可修改文件系统</td></tr><tr><td><code>readOnlyTools</code></td><td><code>read</code>, <code>grep</code>, <code>find</code>, <code>ls</code></td><td>只读探索</td></tr></tbody></table></div>
+<h3 id="核心工具">核心工具<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#核心工具" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<ul>
+<li><strong>read</strong> — 读文件，支持图片（JPG/PNG/GIF/WebP → ImageContent），50KB / 2000 行截断，支持 offset + limit 分页</li>
+<li><strong>edit</strong> — 精确替换（oldText / newText），exact match 失败时 fuzzy fallback（去尾部空格、Unicode 引号/破折号归一化）</li>
+<li><strong>write</strong> — 整文件写入</li>
+<li><strong>bash</strong> — shell 命令执行，流式输出 + 截断</li>
+</ul>
+<h3 id="文件安全">文件安全<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#文件安全" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p><code>withFileMutationQueue</code> — 以绝对路径为 key 的 Map&lt;string, Promise>，串行化同一文件的并发写操作，防 race condition。</p>
+<p><code>resolveToCwd</code> / <code>resolveReadPath</code> — 确保所有路径操作在工作目录内。</p>
+<h2 id="扩展机制">扩展机制<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#扩展机制" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>通过 <code>ExtensionRunner</code> 管理插件生命周期，支持：</p>
+<ul>
+<li><strong>Skills</strong> — 预设 prompt 模板</li>
+<li><strong>Themes</strong> — UI 主题</li>
+<li><strong>Pi Packages</strong> — NPM 包形式的扩展</li>
+<li><strong>动态工具注册</strong> — 运行时添加自定义 tool（如 image-gen、sub-agent）</li>
+<li><strong>Tool override</strong> — 替换内置工具行为</li>
+</ul>
+<p>扩展示例见 <code>packages/coding-agent/examples/extensions/</code>（50+ 示例）。</p>
+<h2 id="二次开发">二次开发<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#二次开发" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<h3 id="npm-包分层">NPM 包分层<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#npm-包分层" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>4 个 npm 包，按抽象层级由低到高：</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>包</th><th>npm</th><th>用途</th></tr></thead><tbody><tr><td><code>packages/agent</code></td><td><code>@earendil-works/pi-agent-core</code></td><td>Agent loop、工具执行、事件流</td></tr><tr><td><code>packages/ai</code></td><td><code>@earendil-works/pi-ai</code></td><td>统一多 provider LLM 流式 API</td></tr><tr><td><code>packages/coding-agent</code></td><td><code>@earendil-works/pi-coding-agent</code></td><td>CLI + 完整 SDK，session、扩展</td></tr><tr><td><code>packages/tui</code></td><td><code>@earendil-works/pi-tui</code></td><td>差分终端渲染库</td></tr></tbody></table></div>
+<p>按需引用：嵌入自己的应用只需 <code>pi-agent-core</code> + <code>pi-ai</code>；完整功能用 <code>pi-coding-agent</code>。</p>
+<h3 id="extension-开发">Extension 开发<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#extension-开发" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>扩展是一个导出 default 函数的 <code>.ts</code> 文件，参数为 <code>ExtensionAPI</code>，无需编译（<code>jiti</code> 加载）：</p>
+<pre><code class="language-typescript">import type { ExtensionAPI } from &quot;@earendil-works/pi-coding-agent&quot;;
+
+export default function (pi: ExtensionAPI) {
+  // 注册工具、hook、命令等
+}
+</code></pre>
+<p><strong>加载路径</strong>（优先级从高到低）：</p>
+<ul>
+<li><code>--extension path/to/ext.ts</code> CLI 参数</li>
+<li><code>settings.json</code> 的 <code>&quot;extensions&quot;</code> 数组</li>
+<li><code>&lt;cwd>/.pi/extensions/</code> — 项目级</li>
+<li><code>~/.pi/agent/extensions/</code> — 全局</li>
+</ul>
+<h3 id="自定义工具">自定义工具<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#自定义工具" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>通过 <code>defineTool()</code> + <code>pi.registerTool()</code> 注册：</p>
+<pre><code class="language-typescript">import { defineTool, type ExtensionAPI } from &quot;@earendil-works/pi-coding-agent&quot;;
+import { Type } from &quot;@earendil-works/pi-ai&quot;;
+
+const myTool = defineTool({
+  name: &quot;hello&quot;,
+  label: &quot;Hello&quot;,
+  description: &quot;A greeting tool&quot;,
+  parameters: Type.Object({
+    name: Type.String({ description: &quot;Name to greet&quot; }),
+  }),
+  async execute(_toolCallId, params, _signal, _onUpdate, _ctx) {
+    return {
+      content: [{ type: &quot;text&quot;, text: `Hello, ${params.name}!` }],
+      details: { greeted: params.name },
+    };
+  },
+  // 可选：自定义 TUI 渲染
+  renderCall(args, theme, _context) { /* ... */ },
+  renderResult(result, opts, theme, _context) { /* ... */ },
+});
+
+export default function (pi: ExtensionAPI) {
+  pi.registerTool(myTool);
+}
+</code></pre>
+<p>核心接口 <code>AgentTool</code>：</p>
+<ul>
+<li><code>execute()</code> 返回 <code>{ content, details, terminate? }</code></li>
+<li><code>executionMode</code> — <code>&quot;parallel&quot;</code> | <code>&quot;sequential&quot;</code></li>
+<li><code>prepareArguments</code> — 参数预处理</li>
+</ul>
+<h3 id="事件-hook">事件 Hook<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#事件-hook" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p><code>pi.on(event, handler)</code> 可拦截/修改 agent 行为：</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>事件</th><th>触发时机</th><th>可拦截？</th></tr></thead><tbody><tr><td><code>tool_call</code></td><td>工具执行前</td><td>✅ <code>{ block: true, reason }</code></td></tr><tr><td><code>tool_result</code></td><td>工具执行后</td><td>✅ 可修改结果</td></tr><tr><td><code>before_provider_request</code></td><td>LLM API 调用前</td><td>✅ 可修改消息</td></tr><tr><td><code>before_agent_start</code></td><td>session 首次 LLM 调用前</td><td>✅ 可修改 prompt</td></tr><tr><td><code>input</code></td><td>用户输入</td><td>✅ 可转换文本</td></tr><tr><td><code>turn_start</code> / <code>turn_end</code></td><td>每轮开始/结束</td><td>❌</td></tr><tr><td><code>agent_start</code> / <code>agent_end</code></td><td>agent 开始/结束</td><td>❌</td></tr><tr><td><code>session_*</code></td><td>session 生命周期</td><td>部分可拦截</td></tr><tr><td><code>resources_discover</code></td><td>资源发现</td><td>✅ 可注入 skills/prompts</td></tr></tbody></table></div>
+<p>示例——权限网关：</p>
+<pre><code class="language-typescript">pi.on(&quot;tool_call&quot;, async (event, ctx) => {
+  if (event.toolName === &quot;bash&quot; &amp;&amp; isDangerous(event.input.command)) {
+    const choice = await ctx.ui.select(&quot;Allow?&quot;, [&quot;Yes&quot;, &quot;No&quot;]);
+    if (choice !== &quot;Yes&quot;) return { block: true, reason: &quot;Blocked&quot; };
+  }
+});
+</code></pre>
+<h3 id="自定义-llm-provider">自定义 LLM Provider<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#自定义-llm-provider" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>三种方式，灵活度递增：</p>
+<p><strong>1. <code>models.json</code>（零代码）</strong> — 适合 OpenAI/Anthropic 兼容代理：</p>
+<ul>
+<li>在 <code>~/.pi/agent/models.json</code> 中配置 baseUrl 和模型参数</li>
+</ul>
+<p><strong>2. <code>pi.registerProvider()</code>（Extension 级）</strong> — 完整 provider：</p>
+<pre><code class="language-typescript">pi.registerProvider(&quot;my-provider&quot;, {
+  baseUrl: &quot;https://my-api.com&quot;,
+  apiKey: &quot;$MY_API_KEY&quot;,
+  api: &quot;my-api&quot;,
+  models: [{ id: &quot;my-model&quot;, name: &quot;My Model&quot;, ... }],
+  oauth: { /* PKCE OAuth 流程 */ },
+  streamSimple: myStreamFn, // 返回 AssistantMessageEventStream
+});
+</code></pre>
+<p><strong>3. <code>registerApiProvider()</code>（pi-ai 底层）</strong> — 最低层注册</p>
+<p>已有示例：<code>custom-provider-anthropic/</code>、<code>custom-provider-gitlab-duo/</code>。</p>
+<h3 id="sdk-嵌入">SDK 嵌入<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#sdk-嵌入" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>三个抽象层级，按需选择：</p>
+<p><strong>高层 — <code>createAgentSession()</code></strong>：</p>
+<pre><code class="language-typescript">import { createAgentSession } from &quot;@earendil-works/pi-coding-agent&quot;;
+
+const { session } = await createAgentSession({
+  model: &quot;claude-sonnet-4&quot;,
+  tools: [&quot;read&quot;, &quot;bash&quot;, &quot;edit&quot;, &quot;write&quot;],
+  customTools: [myTool],
+  thinkingLevel: &quot;medium&quot;,
+});
+
+session.subscribe((event) => {
+  if (event.type === &quot;message_update&quot;) {
+    process.stdout.write(event.assistantMessageEvent.delta);
+  }
+});
+await session.prompt(&quot;What files are here?&quot;);
+session.dispose();
+</code></pre>
+<p><strong>中层 — <code>Agent</code> class</strong>（pi-agent-core）：</p>
+<pre><code class="language-typescript">import { Agent } from &quot;@earendil-works/pi-agent-core&quot;;
+
+const agent = new Agent({
+  initialState: { systemPrompt: &quot;...&quot;, model, tools: [...] },
+  beforeToolCall: async ({ toolCall }) => { /* 拦截 */ },
+  afterToolCall: async ({ toolCall, result }) => { /* 后处理 */ },
+});
+await agent.prompt(&quot;Hello!&quot;);
+</code></pre>
+<p><strong>底层 — <code>agentLoop()</code> async generator</strong>：</p>
+<pre><code class="language-typescript">for await (const event of agentLoop([msg], context, config)) {
+  console.log(event.type);
+}
+</code></pre>
+<h3 id="rpc-模式">RPC 模式<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#rpc-模式" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Pi 可作为子进程运行，通过 stdio JSON 通信，任何语言都能驱动。详见 <code>packages/coding-agent/docs/rpc.md</code>。</p>
+<h3 id="自定义命令与快捷键">自定义命令与快捷键<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#自定义命令与快捷键" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<pre><code class="language-typescript">pi.registerCommand(&quot;todos&quot;, {
+  description: &quot;Show todos&quot;,
+  handler: async (args, ctx) => { /* ... */ },
+});
+
+pi.registerKeybinding({
+  key: &quot;ctrl+shift+t&quot;,
+  description: &quot;Open todos&quot;,
+  handler: async (ctx) => { /* ... */ },
+});
+</code></pre>
+<h3 id="配置文件一览">配置文件一览<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#配置文件一览" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>路径</th><th>用途</th></tr></thead><tbody><tr><td><code>~/.pi/agent/auth.json</code></td><td>API 密钥、OAuth token</td></tr><tr><td><code>~/.pi/agent/settings.json</code></td><td>compaction、retry、image 等设置</td></tr><tr><td><code>~/.pi/agent/models.json</code></td><td>自定义模型定义</td></tr><tr><td><code>~/.pi/agent/extensions/</code></td><td>全局扩展</td></tr><tr><td><code>~/.pi/agent/prompts/</code></td><td>prompt 模板</td></tr><tr><td><code>~/.pi/agent/themes/</code></td><td>自定义主题</td></tr><tr><td><code>&lt;cwd>/.pi/extensions/</code></td><td>项目级扩展</td></tr><tr><td><code>&lt;cwd>/.pi/skills/</code></td><td>agent skills</td></tr></tbody></table></div>
+<h3 id="不支持的">不支持的<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#不支持的" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<ul>
+<li><strong>MCP（Model Context Protocol）</strong>— 不支持，代码库中零引用。Pi 用自己的原生扩展系统替代。</li>
+</ul>
+<h2 id="session-管理">Session 管理<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#session-管理" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<ul>
+<li><strong>JSONL 存储</strong> — 每个 session 一个 <code>.jsonl</code> 文件，追加写入</li>
+<li><strong>树状分支</strong> — session 可以 fork/branch，历史是树结构而非线性</li>
+<li><strong>Compaction</strong> — 上下文窗口管理：auto-compaction、不活跃分支摘要化、<code>CompactionEntry</code> pipeline</li>
+</ul>
+<h2 id="执行模式">执行模式<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#执行模式" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>模式</th><th>说明</th></tr></thead><tbody><tr><td>Interactive TUI</td><td>默认，差分渲染终端 UI</td></tr><tr><td>Print / JSON</td><td>非交互输出，适合脚本</td></tr><tr><td>RPC</td><td>进程间通信</td></tr><tr><td>SDK embedding</td><td>嵌入其他应用</td></tr></tbody></table></div>
+<h2 id="与-claude-code--codex-对比">与 Claude Code / Codex 对比<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#与-claude-code--codex-对比" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>维度</th><th>Pi Agent</th><th>Claude Code</th><th>Codex CLI</th></tr></thead><tbody><tr><td>开源</td><td>✅ MIT</td><td>❌ 商业</td><td>✅</td></tr><tr><td>模型</td><td>任意（15+ provider）</td><td>Claude only</td><td>OpenAI only</td></tr><tr><td>Token 开销</td><td>低（system prompt &lt;1000 tok）</td><td>高（~3-4x）</td><td>中</td></tr><tr><td>核心工具</td><td>4 (read/write/edit/bash)</td><td>~15+</td><td>~10</td></tr><tr><td>扩展</td><td>Skills / Packages / Themes</td><td>MCP</td><td>有限</td></tr><tr><td>Session</td><td>JSONL tree branching</td><td>内置</td><td>异步 PR 导向</td></tr><tr><td>优势</td><td>轻量、透明、可 hack</td><td>生态成熟、多工具</td><td>CI/异步工作流</td></tr></tbody></table></div>
+<h2 id="值得借鉴的设计">值得借鉴的设计<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#值得借鉴的设计" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<ol>
+<li><strong>极简 agent loop</strong> — 418 行包含全部核心逻辑，降低理解和 debug 门槛</li>
+<li><strong>消息管线</strong> — <code>transformContext</code> → <code>convertToLlm</code> 的两步转换让 AgentMessage 支持自定义类型，UI 消息和 LLM 消息解耦</li>
+<li><strong>File Mutation Queue</strong> — 用 promise 链串行化同文件写操作，简洁有效</li>
+<li><strong>Steering</strong> — 中途注入消息的能力让 agent 可被人类实时校正</li>
+<li><strong>System prompt &lt;1000 tokens</strong> — 证明了”少即是多”，prompt 越短模型越容易遵循</li>
+</ol>
+<h2 id="参考依据">参考依据<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#参考依据" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<blockquote>
+<p>补充时间：2026-05-30。以下为本笔记主要依据，后续以官方仓库最新内容为准。</p>
+</blockquote>
+<ol>
+<li>仓库主页（stars、许可证、整体定位）：<a href="https://github.com/earendil-works/pi" class="external external-link">https://github.com/earendil-works/pi<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a></li>
+<li>项目 README（monorepo 分层、核心理念、子包概览）：<a href="https://raw.githubusercontent.com/earendil-works/pi/main/README.md" class="external external-link">https://raw.githubusercontent.com/earendil-works/pi/main/README.md<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a></li>
+<li>Agent loop 源码（核心循环与 hook 机制）：<a href="https://raw.githubusercontent.com/earendil-works/pi/main/packages/agent/src/agent-loop.ts" class="external external-link">https://raw.githubusercontent.com/earendil-works/pi/main/packages/agent/src/agent-loop.ts<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a></li>
+<li>扩展机制文档（extensions、注册方式、加载路径）：<a href="https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/docs/extensions.md" class="external external-link">https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/docs/extensions.md<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a></li>
+<li>自定义 provider 文档（models.json、registerProvider 等）：<a href="https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/docs/custom-provider.md" class="external external-link">https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/docs/custom-provider.md<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a></li>
+<li>示例扩展目录（扩展样例集合）：<a href="https://github.com/earendil-works/pi/tree/main/packages/coding-agent/examples/extensions" class="external external-link">https://github.com/earendil-works/pi/tree/main/packages/coding-agent/examples/extensions<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a></li>
+<li>RPC 文档（子进程 + stdio JSON）：<a href="https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/docs/rpc.md" class="external external-link">https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/docs/rpc.md<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a></li>
+</ol></div></article><hr/><div class="page-footer"></div></div><div class="right sidebar"><div class="graph"><h3>关系图谱</h3><div class="graph-outer"><div class="graph-container" data-cfg="{&quot;drag&quot;:true,&quot;zoom&quot;:true,&quot;depth&quot;:1,&quot;scale&quot;:1.1,&quot;repelForce&quot;:0.5,&quot;centerForce&quot;:0.3,&quot;linkDistance&quot;:30,&quot;fontSize&quot;:0.6,&quot;opacityScale&quot;:1,&quot;showTags&quot;:true,&quot;removeTags&quot;:[],&quot;focusOnHover&quot;:false,&quot;enableRadial&quot;:false}"></div><button class="global-graph-icon" aria-label="Global Graph"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 55 55" fill="currentColor" xml:space="preserve"><path d="M49,0c-3.309,0-6,2.691-6,6c0,1.035,0.263,2.009,0.726,2.86l-9.829,9.829C32.542,17.634,30.846,17,29,17
+                s-3.542,0.634-4.898,1.688l-7.669-7.669C16.785,10.424,17,9.74,17,9c0-2.206-1.794-4-4-4S9,6.794,9,9s1.794,4,4,4
+                c0.74,0,1.424-0.215,2.019-0.567l7.669,7.669C21.634,21.458,21,23.154,21,25s0.634,3.542,1.688,4.897L10.024,42.562
+                C8.958,41.595,7.549,41,6,41c-3.309,0-6,2.691-6,6s2.691,6,6,6s6-2.691,6-6c0-1.035-0.263-2.009-0.726-2.86l12.829-12.829
+                c1.106,0.86,2.44,1.436,3.898,1.619v10.16c-2.833,0.478-5,2.942-5,5.91c0,3.309,2.691,6,6,6s6-2.691,6-6c0-2.967-2.167-5.431-5-5.91
+                v-10.16c1.458-0.183,2.792-0.759,3.898-1.619l7.669,7.669C41.215,39.576,41,40.26,41,41c0,2.206,1.794,4,4,4s4-1.794,4-4
+                s-1.794-4-4-4c-0.74,0-1.424,0.215-2.019,0.567l-7.669-7.669C36.366,28.542,37,26.846,37,25s-0.634-3.542-1.688-4.897l9.665-9.665
+                C46.042,11.405,47.451,12,49,12c3.309,0,6-2.691,6-6S52.309,0,49,0z M11,9c0-1.103,0.897-2,2-2s2,0.897,2,2s-0.897,2-2,2
+                S11,10.103,11,9z M6,51c-2.206,0-4-1.794-4-4s1.794-4,4-4s4,1.794,4,4S8.206,51,6,51z M33,49c0,2.206-1.794,4-4,4s-4-1.794-4-4
+                s1.794-4,4-4S33,46.794,33,49z M29,31c-3.309,0-6-2.691-6-6s2.691-6,6-6s6,2.691,6,6S32.309,31,29,31z M47,41c0,1.103-0.897,2-2,2
+                s-2-0.897-2-2s0.897-2,2-2S47,39.897,47,41z M49,10c-2.206,0-4-1.794-4-4s1.794-4,4-4s4,1.794,4,4S51.206,10,49,10z"></path></svg></button></div><div class="global-graph-outer"><div class="global-graph-container" data-cfg="{&quot;drag&quot;:true,&quot;zoom&quot;:true,&quot;depth&quot;:-1,&quot;scale&quot;:0.9,&quot;repelForce&quot;:0.5,&quot;centerForce&quot;:0.2,&quot;linkDistance&quot;:30,&quot;fontSize&quot;:0.6,&quot;opacityScale&quot;:1,&quot;showTags&quot;:true,&quot;removeTags&quot;:[],&quot;focusOnHover&quot;:true,&quot;enableRadial&quot;:true}"></div></div></div><div class="toc"><button type="button" class="toc-header" aria-controls="toc-96" aria-expanded="true"><h3>目录</h3><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fold"><polyline points="6 9 12 15 18 9"></polyline></svg></button><ul id="list-0" class="toc-content overflow"><li class="depth-0"><a href="#pi-agent-学习笔记" data-for="pi-agent-学习笔记">Pi Agent 学习笔记</a></li><li class="depth-1"><a href="#架构总览" data-for="架构总览">架构总览</a></li><li class="depth-1"><a href="#agent-loop" data-for="agent-loop">Agent Loop</a></li><li class="depth-2"><a href="#关键机制" data-for="关键机制">关键机制</a></li><li class="depth-1"><a href="#工具系统" data-for="工具系统">工具系统</a></li><li class="depth-2"><a href="#核心工具" data-for="核心工具">核心工具</a></li><li class="depth-2"><a href="#文件安全" data-for="文件安全">文件安全</a></li><li class="depth-1"><a href="#扩展机制" data-for="扩展机制">扩展机制</a></li><li class="depth-1"><a href="#二次开发" data-for="二次开发">二次开发</a></li><li class="depth-2"><a href="#npm-包分层" data-for="npm-包分层">NPM 包分层</a></li><li class="depth-2"><a href="#extension-开发" data-for="extension-开发">Extension 开发</a></li><li class="depth-2"><a href="#自定义工具" data-for="自定义工具">自定义工具</a></li><li class="depth-2"><a href="#事件-hook" data-for="事件-hook">事件 Hook</a></li><li class="depth-2"><a href="#自定义-llm-provider" data-for="自定义-llm-provider">自定义 LLM Provider</a></li><li class="depth-2"><a href="#sdk-嵌入" data-for="sdk-嵌入">SDK 嵌入</a></li><li class="depth-2"><a href="#rpc-模式" data-for="rpc-模式">RPC 模式</a></li><li class="depth-2"><a href="#自定义命令与快捷键" data-for="自定义命令与快捷键">自定义命令与快捷键</a></li><li class="depth-2"><a href="#配置文件一览" data-for="配置文件一览">配置文件一览</a></li><li class="depth-2"><a href="#不支持的" data-for="不支持的">不支持的</a></li><li class="depth-1"><a href="#session-管理" data-for="session-管理">Session 管理</a></li><li class="depth-1"><a href="#执行模式" data-for="执行模式">执行模式</a></li><li class="depth-1"><a href="#与-claude-code--codex-对比" data-for="与-claude-code--codex-对比">与 Claude Code / Codex 对比</a></li><li class="depth-1"><a href="#值得借鉴的设计" data-for="值得借鉴的设计">值得借鉴的设计</a></li><li class="depth-1"><a href="#参考依据" data-for="参考依据">参考依据</a></li><li class="overflow-end"></li></ul></div></div><footer class><p>Created with <a href="https://quartz.jzhao.xyz/">Quartz v5.0.0</a> © 2026</p><ul><li><a href="https://github.com/clsrfish/knowledgebase">GitHub</a></li></ul></footer></div></div></body><script src="../static/resource-after-8b336f9a.js" type="application/javascript" data-persist="true"></script><script src="../static/resource-after-baba652b.js" type="application/javascript" data-persist="true"></script><script src="../static/resource-after-5eb75950.js" type="module" data-persist="true"></script><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/copy-tex.min.js" type="application/javascript" data-persist="true"></script><script src="../postscript-1d7bbe70.js" type="module" data-persist="true"></script></html>

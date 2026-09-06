@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+    <channel>
+      <title>Knowledgebase</title>
+      <link>https://clsrfish.github.io</link>
+      <description>Last 10 notes on Knowledgebase</description>
+      <generator>Quartz -- quartz.jzhao.xyz</generator>
+      <item>
+    <title>ARGB_8888</title>
+    <link>https://clsrfish.github.io/attachments/2020-11-07-%E9%A2%9C%E8%89%B2%E7%BC%96%E7%A0%81%E6%96%B9%E5%BC%8F-rgb/argb_8888.excalidraw</link>
+    <guid>https://clsrfish.github.io/attachments/2020-11-07-%E9%A2%9C%E8%89%B2%E7%BC%96%E7%A0%81%E6%96%B9%E5%BC%8F-rgb/argb_8888.excalidraw</guid>
+    <description><![CDATA[  ]]></description>
+    <pubDate>Sun, 06 Sep 2026 17:26:49 GMT</pubDate>
+  </item><item>
+    <title>AdditiveColor</title>
+    <link>https://clsrfish.github.io/attachments/2020-11-07-%E9%A2%9C%E8%89%B2%E7%BC%96%E7%A0%81%E6%96%B9%E5%BC%8F-rgb/additivecolor.excalidraw</link>
+    <guid>https://clsrfish.github.io/attachments/2020-11-07-%E9%A2%9C%E8%89%B2%E7%BC%96%E7%A0%81%E6%96%B9%E5%BC%8F-rgb/additivecolor.excalidraw</guid>
+    <description><![CDATA[  ]]></description>
+    <pubDate>Sun, 06 Sep 2026 17:26:49 GMT</pubDate>
+  </item><item>
+    <title>RGB_565</title>
+    <link>https://clsrfish.github.io/attachments/2020-11-07-%E9%A2%9C%E8%89%B2%E7%BC%96%E7%A0%81%E6%96%B9%E5%BC%8F-rgb/rgb_565.excalidraw</link>
+    <guid>https://clsrfish.github.io/attachments/2020-11-07-%E9%A2%9C%E8%89%B2%E7%BC%96%E7%A0%81%E6%96%B9%E5%BC%8F-rgb/rgb_565.excalidraw</guid>
+    <description><![CDATA[  ]]></description>
+    <pubDate>Sun, 06 Sep 2026 17:26:49 GMT</pubDate>
+  </item><item>
+    <title>RGB_888</title>
+    <link>https://clsrfish.github.io/attachments/2020-11-07-%E9%A2%9C%E8%89%B2%E7%BC%96%E7%A0%81%E6%96%B9%E5%BC%8F-rgb/rgb_888.excalidraw</link>
+    <guid>https://clsrfish.github.io/attachments/2020-11-07-%E9%A2%9C%E8%89%B2%E7%BC%96%E7%A0%81%E6%96%B9%E5%BC%8F-rgb/rgb_888.excalidraw</guid>
+    <description><![CDATA[  ]]></description>
+    <pubDate>Sun, 06 Sep 2026 17:26:49 GMT</pubDate>
+  </item><item>
+    <title>SubtractiveColor</title>
+    <link>https://clsrfish.github.io/attachments/2020-11-07-%E9%A2%9C%E8%89%B2%E7%BC%96%E7%A0%81%E6%96%B9%E5%BC%8F-rgb/subtractivecolor.excalidraw</link>
+    <guid>https://clsrfish.github.io/attachments/2020-11-07-%E9%A2%9C%E8%89%B2%E7%BC%96%E7%A0%81%E6%96%B9%E5%BC%8F-rgb/subtractivecolor.excalidraw</guid>
+    <description><![CDATA[  ]]></description>
+    <pubDate>Sun, 06 Sep 2026 17:26:49 GMT</pubDate>
+  </item><item>
+    <title>YUV_stride</title>
+    <link>https://clsrfish.github.io/attachments/2020-11-12-%E9%A2%9C%E8%89%B2%E7%BC%96%E7%A0%81%E6%96%B9%E5%BC%8F-yuv/yuv_stride.excalidraw</link>
+    <guid>https://clsrfish.github.io/attachments/2020-11-12-%E9%A2%9C%E8%89%B2%E7%BC%96%E7%A0%81%E6%96%B9%E5%BC%8F-yuv/yuv_stride.excalidraw</guid>
+    <description><![CDATA[  ]]></description>
+    <pubDate>Sun, 06 Sep 2026 17:26:49 GMT</pubDate>
+  </item><item>
+    <title>pcm_data</title>
+    <link>https://clsrfish.github.io/attachments/2020-11-14-%E9%9F%B3%E9%A2%91%E7%BC%96%E7%A0%81-pcm/pcm_data.excalidraw</link>
+    <guid>https://clsrfish.github.io/attachments/2020-11-14-%E9%9F%B3%E9%A2%91%E7%BC%96%E7%A0%81-pcm/pcm_data.excalidraw</guid>
+    <description><![CDATA[  ]]></description>
+    <pubDate>Sun, 06 Sep 2026 17:26:49 GMT</pubDate>
+  </item><item>
+    <title>wav_sound_format</title>
+    <link>https://clsrfish.github.io/attachments/2020-11-14-%E9%9F%B3%E9%A2%91%E7%BC%96%E7%A0%81-pcm/wav_sound_format.excalidraw</link>
+    <guid>https://clsrfish.github.io/attachments/2020-11-14-%E9%9F%B3%E9%A2%91%E7%BC%96%E7%A0%81-pcm/wav_sound_format.excalidraw</guid>
+    <description><![CDATA[  ]]></description>
+    <pubDate>Sun, 06 Sep 2026 17:26:49 GMT</pubDate>
+  </item><item>
+    <title>pi-agent-architecture</title>
+    <link>https://clsrfish.github.io/attachments/2026-05-28-pi-agent-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/pi-agent-architecture.excalidraw</link>
+    <guid>https://clsrfish.github.io/attachments/2026-05-28-pi-agent-%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/pi-agent-architecture.excalidraw</guid>
+    <description><![CDATA[  ]]></description>
+    <pubDate>Sun, 06 Sep 2026 17:26:49 GMT</pubDate>
+  </item><item>
+    <title>QDII-汇率联动</title>
+    <link>https://clsrfish.github.io/attachments/2026-05-31-qdii%E4%B8%8E%E4%BA%BA%E6%B0%91%E5%B8%81%E6%B1%87%E7%8E%87%E7%AE%A1%E7%90%86/qdii-%E6%B1%87%E7%8E%87%E8%81%94%E5%8A%A8.excalidraw</link>
+    <guid>https://clsrfish.github.io/attachments/2026-05-31-qdii%E4%B8%8E%E4%BA%BA%E6%B0%91%E5%B8%81%E6%B1%87%E7%8E%87%E7%AE%A1%E7%90%86/qdii-%E6%B1%87%E7%8E%87%E8%81%94%E5%8A%A8.excalidraw</guid>
+    <description><![CDATA[  ]]></description>
+    <pubDate>Sun, 06 Sep 2026 17:26:49 GMT</pubDate>
+  </item>
+    </channel>
+  </rss>
