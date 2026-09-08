@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh" dir="ltr"><head><title>2021-05-08-LeetCode遇上GoogleTest</title><meta charset="utf-8"/><link rel="preload" href="../index-bb6c1746.css" as="style"/><link rel="preload" href="../prescript-2bfc6315.js" as="script"/><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted Grotesk:wght@400;700&amp;family=Source Sans Pro:ital,wght@0,400;0,600;1,400;1,600&amp;family=IBM Plex Mono:wght@400;600&amp;display=swap"/><link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin="anonymous"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="og:site_name" content="Knowledgebase"/><meta property="og:title" content="2021-05-08-LeetCode遇上GoogleTest"/><meta property="og:type" content="website"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="2021-05-08-LeetCode遇上GoogleTest"/><meta name="twitter:description" content="用 GoogleTest 和 CMake 改造 LeetCode 工程，减少编译范围并接入 GitHub Actions 自动测试。"/><meta property="og:description" content="用 GoogleTest 和 CMake 改造 LeetCode 工程，减少编译范围并接入 GitHub Actions 自动测试。"/><meta property="og:image:alt" content="用 GoogleTest 和 CMake 改造 LeetCode 工程，减少编译范围并接入 GitHub Actions 自动测试。"/><meta property="twitter:domain" content="clsrfish.github.io"/><meta property="og:url" content="https://clsrfish.github.io/notes/2021-05-08-leetcode遇上googletest"/><meta property="twitter:url" content="https://clsrfish.github.io/notes/2021-05-08-leetcode遇上googletest"/><link rel="icon" href="../static/icon.png"/><meta name="description" content="用 GoogleTest 和 CMake 改造 LeetCode 工程，减少编译范围并接入 GitHub Actions 自动测试。"/><meta name="generator" content="Quartz"/><link href="../index-bb6c1746.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-735924e0.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-589c1cea.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-bbc3f7c0.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-2911f5d1.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-53b25b2b.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-c93c6a44.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-8a06014f.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-77d6a441.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-6ee21cee.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-1ea6ad18.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-34bdfded.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-788c9ca3.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-642859cd.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-4abc06bd.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-274a3dfe.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-94cb6c84.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../component-9f9b2774.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="../static/resource-style-6bd36952.css" rel="stylesheet" type="text/css" data-persist="true"/><link href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" rel="stylesheet" type="text/css" data-persist="true"/><script src="../prescript-2bfc6315.js" type="application/javascript" data-persist="true"></script><script type="application/javascript" data-persist="true">const fetchData = fetch("../static/contentIndex.json").then(data => data.json())</script><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta property="og:image" content="https://clsrfish.github.io/notes/2021-05-08-leetcode遇上googletest-og-image.webp"/><meta property="og:image:url" content="https://clsrfish.github.io/notes/2021-05-08-leetcode遇上googletest-og-image.webp"/><meta name="twitter:image" content="https://clsrfish.github.io/notes/2021-05-08-leetcode遇上googletest-og-image.webp"/><meta property="og:image:type" content="image/webp"/></head><body data-slug="notes/2021-05-08-leetcode遇上googletest" data-basepath><div id="quartz-root" class="page" data-frame="default"><div id="quartz-body"><div class="left sidebar"><h2 class="page-title"><a href="..">Knowledgebase</a></h2><div class="mobile-only"><div class="spacer"></div></div><div class="flex-component" style="flex-direction: row; flex-wrap: nowrap; gap: 0.5rem;"><div style="flex-grow: 1; flex-shrink: 1; flex-basis: auto; order: 0; align-self: center; justify-self: center;"><div class="search"><button class="search-button" aria-label="搜索" aria-expanded="false"><svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19.9 19.7"><title>Search</title><g class="search-path" fill="none"><path stroke-linecap="square" d="M18.5 18.3l-5.4-5.4"></path><circle cx="8" cy="8" r="7"></circle></g></svg><p>搜索</p></button><div class="search-container"><div class="search-space"><input autocomplete="off" class="search-bar" name="search" type="text" aria-label="搜索内容..." placeholder="搜索内容..."/><div class="search-layout" data-preview="true" data-field-priority="[&quot;title&quot;,&quot;content&quot;,&quot;tags&quot;]"></div></div></div></div></div><div style="flex-grow: 0; flex-shrink: 1; flex-basis: auto; order: 0; align-self: center; justify-self: center;"><button class="darkmode" aria-label="暗色模式"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" class="dayIcon" x="0px" y="0px" viewBox="0 0 35 35" style="enable-background:new 0 0 35 35" xml:space="preserve" aria-label="暗色模式"><title>暗色模式</title><path d="M6,17.5C6,16.672,5.328,16,4.5,16h-3C0.672,16,0,16.672,0,17.5    S0.672,19,1.5,19h3C5.328,19,6,18.328,6,17.5z M7.5,26c-0.414,0-0.789,0.168-1.061,0.439l-2,2C4.168,28.711,4,29.086,4,29.5    C4,30.328,4.671,31,5.5,31c0.414,0,0.789-0.168,1.06-0.44l2-2C8.832,28.289,9,27.914,9,27.5C9,26.672,8.329,26,7.5,26z M17.5,6    C18.329,6,19,5.328,19,4.5v-3C19,0.672,18.329,0,17.5,0S16,0.672,16,1.5v3C16,5.328,16.671,6,17.5,6z M27.5,9    c0.414,0,0.789-0.168,1.06-0.439l2-2C30.832,6.289,31,5.914,31,5.5C31,4.672,30.329,4,29.5,4c-0.414,0-0.789,0.168-1.061,0.44    l-2,2C26.168,6.711,26,7.086,26,7.5C26,8.328,26.671,9,27.5,9z M6.439,8.561C6.711,8.832,7.086,9,7.5,9C8.328,9,9,8.328,9,7.5    c0-0.414-0.168-0.789-0.439-1.061l-2-2C6.289,4.168,5.914,4,5.5,4C4.672,4,4,4.672,4,5.5c0,0.414,0.168,0.789,0.439,1.06    L6.439,8.561z M33.5,16h-3c-0.828,0-1.5,0.672-1.5,1.5s0.672,1.5,1.5,1.5h3c0.828,0,1.5-0.672,1.5-1.5S34.328,16,33.5,16z     M28.561,26.439C28.289,26.168,27.914,26,27.5,26c-0.828,0-1.5,0.672-1.5,1.5c0,0.414,0.168,0.789,0.439,1.06l2,2    C28.711,30.832,29.086,31,29.5,31c0.828,0,1.5-0.672,1.5-1.5c0-0.414-0.168-0.789-0.439-1.061L28.561,26.439z M17.5,29    c-0.829,0-1.5,0.672-1.5,1.5v3c0,0.828,0.671,1.5,1.5,1.5s1.5-0.672,1.5-1.5v-3C19,29.672,18.329,29,17.5,29z M17.5,7    C11.71,7,7,11.71,7,17.5S11.71,28,17.5,28S28,23.29,28,17.5S23.29,7,17.5,7z M17.5,25c-4.136,0-7.5-3.364-7.5-7.5    c0-4.136,3.364-7.5,7.5-7.5c4.136,0,7.5,3.364,7.5,7.5C25,21.636,21.636,25,17.5,25z"></path></svg><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" class="nightIcon" x="0px" y="0px" viewBox="0 0 100 100" style="enable-background:new 0 0 100 100" xml:space="preserve" aria-label="亮色模式"><title>亮色模式</title><path d="M96.76,66.458c-0.853-0.852-2.15-1.064-3.23-0.534c-6.063,2.991-12.858,4.571-19.655,4.571  C62.022,70.495,50.88,65.88,42.5,57.5C29.043,44.043,25.658,23.536,34.076,6.47c0.532-1.08,0.318-2.379-0.534-3.23  c-0.851-0.852-2.15-1.064-3.23-0.534c-4.918,2.427-9.375,5.619-13.246,9.491c-9.447,9.447-14.65,22.008-14.65,35.369  c0,13.36,5.203,25.921,14.65,35.368s22.008,14.65,35.368,14.65c13.361,0,25.921-5.203,35.369-14.65  c3.872-3.871,7.064-8.328,9.491-13.246C97.826,68.608,97.611,67.309,96.76,66.458z"></path></svg></button></div><div style="flex-grow: 0; flex-shrink: 1; flex-basis: auto; order: 0; align-self: center; justify-self: center;"><button class="readermode" aria-label="阅读模式"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" class="readerIcon" fill="currentColor" stroke="currentColor" stroke-width="0.2" stroke-linecap="round" stroke-linejoin="round" width="64px" height="64px" viewBox="0 0 24 24" aria-label="阅读模式"><title>阅读模式</title><g transform="translate(-1.8, -1.8) scale(1.15, 1.2)"><path d="M8.9891247,2.5 C10.1384702,2.5 11.2209868,2.96705384 12.0049645,3.76669482 C12.7883914,2.96705384 13.8709081,2.5 15.0202536,2.5 L18.7549359,2.5 C19.1691495,2.5 19.5049359,2.83578644 19.5049359,3.25 L19.5046891,4.004 L21.2546891,4.00457396 C21.6343849,4.00457396 21.9481801,4.28672784 21.9978425,4.6528034 L22.0046891,4.75457396 L22.0046891,20.25 C22.0046891,20.6296958 21.7225353,20.943491 21.3564597,20.9931534 L21.2546891,21 L2.75468914,21 C2.37499337,21 2.06119817,20.7178461 2.01153575,20.3517706 L2.00468914,20.25 L2.00468914,4.75457396 C2.00468914,4.37487819 2.28684302,4.061083 2.65291858,4.01142057 L2.75468914,4.00457396 L4.50368914,4.004 L4.50444233,3.25 C4.50444233,2.87030423 4.78659621,2.55650904 5.15267177,2.50684662 L5.25444233,2.5 L8.9891247,2.5 Z M4.50368914,5.504 L3.50468914,5.504 L3.50468914,19.5 L10.9478955,19.4998273 C10.4513189,18.9207296 9.73864328,18.5588115 8.96709342,18.5065584 L8.77307039,18.5 L5.25444233,18.5 C4.87474657,18.5 4.56095137,18.2178461 4.51128895,17.8517706 L4.50444233,17.75 L4.50368914,5.504 Z M19.5049359,17.75 C19.5049359,18.1642136 19.1691495,18.5 18.7549359,18.5 L15.2363079,18.5 C14.3910149,18.5 13.5994408,18.8724714 13.0614828,19.4998273 L20.5046891,19.5 L20.5046891,5.504 L19.5046891,5.504 L19.5049359,17.75 Z M18.0059359,3.999 L15.0202536,4 L14.8259077,4.00692283 C13.9889509,4.06666544 13.2254227,4.50975805 12.7549359,5.212 L12.7549359,17.777 L12.7782651,17.7601316 C13.4923805,17.2719483 14.3447024,17 15.2363079,17 L18.0059359,16.999 L18.0056891,4.798 L18.0033792,4.75457396 L18.0056891,4.71 L18.0059359,3.999 Z M8.9891247,4 L6.00368914,3.999 L6.00599909,4.75457396 L6.00599909,4.75457396 L6.00368914,4.783 L6.00368914,16.999 L8.77307039,17 C9.57551536,17 10.3461406,17.2202781 11.0128313,17.6202194 L11.2536891,17.776 L11.2536891,5.211 C10.8200889,4.56369974 10.1361548,4.13636104 9.37521067,4.02745763 L9.18347055,4.00692283 L8.9891247,4 Z"></path></g></svg></button></div></div><div class="explorer nav-files-container" data-behavior="link" data-collapsed="collapsed" data-savestate="true" data-data-fns="{&quot;order&quot;:[&quot;filter&quot;,&quot;map&quot;,&quot;sort&quot;],&quot;sortFn&quot;:&quot;(a2, b2) => {\n    if (!a2.isFolder &amp;&amp; !b2.isFolder || a2.isFolder &amp;&amp; b2.isFolder) {\n      return (a2.displayName || \&quot;\&quot;).localeCompare(b2.displayName || \&quot;\&quot;, void 0, {\n        numeric: true,\n        sensitivity: \&quot;base\&quot;\n      });\n    }\n    if (!a2.isFolder &amp;&amp; b2.isFolder) {\n      return 1;\n    }\n    return -1;\n  }&quot;,&quot;filterFn&quot;:&quot;(node) => node.slugSegment !== \&quot;tags\&quot;&quot;,&quot;mapFn&quot;:&quot;(node) => {\n    return node;\n  }&quot;}"><button type="button" class="explorer-toggle mobile-explorer hide-until-loaded" data-mobile="true" aria-controls="explorer-55" aria-label="探索"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide-menu"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button><button type="button" class="title-button explorer-toggle desktop-explorer" data-mobile="false" aria-expanded="true"><h2>探索</h2><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fold"><polyline points="6 9 12 15 18 9"></polyline></svg></button><div id="explorer-55" class="explorer-content" aria-expanded="false" role="group"><ul class="explorer-ul overflow" id="list-0"><li class="overflow-end"></li></ul></div><template id="template-file"><li><a href="#" class="nav-file-title tree-item-self"></a></li></template><template id="template-folder"><li><div class="folder-container nav-folder-title tree-item-self"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon nav-folder-collapse-indicator collapse-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div><button class="folder-button"><span class="folder-title"></span></button></div></div><div class="folder-outer"><ul class="content tree-item-children"></ul></div></li></template></div></div><div class="center"><div class="page-header"><div class="popover-hint"><nav class="breadcrumb-container" aria-label="breadcrumbs"><div class="breadcrumb-element"><a href="../">Home</a><p> ❯ </p></div><div class="breadcrumb-element"><a href="../notes/">Notes</a><p> ❯ </p></div><div class="breadcrumb-element"><a href>2021-05-08-LeetCode遇上GoogleTest</a></div></nav><h1 class="article-title">2021-05-08-LeetCode遇上GoogleTest</h1><details class="note-properties metadata-container" open data-collapsed="false"><summary class="note-properties-header"><span class="note-properties-title">Properties</span><span class="note-properties-count">3</span></summary><table class="note-properties-table"><tbody><tr class="note-properties-row metadata-property"><td class="note-properties-key metadata-property-key">description</td><td class="note-properties-value metadata-property-value"><span class="note-properties-text">用 GoogleTest 和 CMake 改造 LeetCode 工程，减少编译范围并接入 GitHub Actions 自动测试。</span></td></tr><tr class="note-properties-row metadata-property"><td class="note-properties-key metadata-property-key">tags</td><td class="note-properties-value metadata-property-value"><span class="note-properties-tags"><a href="../tags/leetcode" class="internal internal-link tag-link">leetcode</a><span class="note-properties-separator">, </span><a href="../tags/googletest" class="internal internal-link tag-link">googletest</a><span class="note-properties-separator">, </span><a href="../tags/cmake" class="internal internal-link tag-link">cmake</a><span class="note-properties-separator">, </span><a href="../tags/github-actions" class="internal internal-link tag-link">github-actions</a><span class="note-properties-separator">, </span><a href="../tags/cpp" class="internal internal-link tag-link">cpp</a></span></td></tr><tr class="note-properties-row metadata-property"><td class="note-properties-key metadata-property-key">aliases</td><td class="note-properties-value metadata-property-value"><span class="note-properties-list"><span class="note-properties-text">GoogleTest</span></span></td></tr></tbody></table></details><p show-comma="true" class="content-meta"><time datetime="2026-05-31T11:04:00.000Z">2026年5月31日</time><span>19分钟阅读</span></p></div></div><article class="popover-hint"><div class="markdown-preview-view markdown-rendered"><h1 id="leetcode遇上googletest">LeetCode遇上GoogleTest<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#leetcode遇上googletest" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h1>
+<blockquote class="callout review" data-callout="review">
+<div class="callout-title">
+                  <div class="callout-icon"></div>
+                  <div class="callout-title-inner"><p>2026-06-02 </p></div>
+                  
+                </div>
+<div class="callout-content">
+<p>文中部分工程化建议已过时：CMake 依赖接入示例仍使用 FetchContent_GetProperties/FetchContent_Populate/add_subdirectory 旧模式，CMake 最新文档已明确建议项目改用 FetchContent_MakeAvailable；示例中的 GoogleTest release-1.10.0、actions/checkout@v2、lukka/run-cmake@v3 也已明显落后当前主流版本，直接照抄会带来维护成本或与新版工作流不一致。</p>
+</div>
+</blockquote>
+<blockquote>
+<p>这篇文章将记录怎么用 <a href="https://google.github.io/googletest/" class="external external-link">GoogleTest<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a> 来管理 LeetCode 的测试 case，以及优化 CMakeLists 配置避免每次都需要编译、链接整个工程，最后再利用 GitHub Action 进行自动化测试。文中不会对 Google Test 细节进行介绍，感兴趣的可以去官网阅读。</p>
+<p>如果还不了解如何使用 VSCode 和 CMake 管理你的 C++ 工程，建议先看看<a href="../notes/2021-01-18-vscode搭建c++开发环境" class="internal internal-link alias" data-slug="notes/2021-01-18-vscode搭建c++开发环境">这篇文章</a>。</p>
+<p>本文基于 macOS 10.15，Linux 环境下差别不大，后面也会提到一些 Linux 相关的配置 。</p>
+</blockquote>
+<hr/>
+<h2 id="1-前言">1. 前言<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#1-前言" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>为了方便回顾每道 LeetCode 的 AC 过程，每道题的解答都在同一个 CMake 工程中进行管理，公共数据结构（比如 ListNode、TreeNode 等）使用单独的 model 模块进行管理，不同 LeetCode 就用命名空间 <code>leetcode_xxx</code> 进行隔离，通过 <code>xxx</code> 确定某次需要运行的 LeetCode 解答，整个工程统一编译链接，构建一个可执行文件。使用这种方式管理的工程目录结构大概长这样：</p>
+<pre><code class="language-shell">├── CMakeLists.txt
+├── main.cpp
+├── build # 编译产物
+└── src
+    ├── 1.cpp
+    ├── 2.cpp
+    ├── xxx.cpp
+    ├── CMakeLists.txt
+    ├── model # 存放公共数据结构
+    │   ├── CMakeLists.txt
+    │   ├── list_node.cpp
+    │   └── list_node.hpp
+    └── utils # 存放工具函数
+        ├── CMakeLists.txt
+        ├── stl_utils.cpp
+        └── stl_utils.hpp
+</code></pre>
+<p>每道 LeetCode 解答（xxx.cpp）代码结构如下：</p>
+<pre><code class="language-c++">namespace leetcode_xxx {
+
+string key = &quot;xxx&quot;;
+
+class Solution {
+ public:
+    void solutionName(){}
+};
+
+int main() {
+  std::cout &lt;&lt; key &lt;&lt; &quot;: 标题&quot; &lt;&lt; std::endl;
+  Solution().solutionName();
+  return 0;
+}
+
+}
+</code></pre>
+<p>所有 LeetCode 解答在 <code>main.cpp</code> 中用 <code>map&lt;std::string, int (*)()></code> 保存，通过指定 key 确认需要执行的 LeetCode：</p>
+<pre><code class="language-c++">int main(int argc, char const *argv[]) {
+    std::map&lt;std::string, int (*)()> leetcodes{
+      PROBLEM(leetcode_xxx), ...
+    };
+
+    std::string lckey = &quot;xxx&quot;
+    // 通过参数指定需要执行的 LeetCode
+    if (argc > 1) {
+    std::string input = std::string(argv[1]);
+    if (leetcodes.count(input) > 0) {
+      lckey = input;
+    } else {
+      std::cout &lt;&lt; &quot;invalid input:&quot; &lt;&lt; input &lt;&lt; &quot;, running &quot; &lt;&lt; lckey &lt;&lt; &quot; instead&quot; &lt;&lt; std::endl;
+    }
+  }
+    return leetcodes[lckey]();
+}
+</code></pre>
+<p>每道题解代码格式固定，可以使用 VSCode <a href="https://code.visualstudio.com/docs/editor/userdefinedsnippets" class="external external-link">Snippet<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a> 避免模板代码。这样，我们就可以在 VSCode 中快速创建新的 LeetCode 题解并调试了。</p>
+<h3 id="11-编译速度影响刷题体验">1.1. 编译速度影响刷题体验<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#11-编译速度影响刷题体验" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>按照上面的方式组织代码一开始运行得还不错，在有编译缓存的情况下 <strong>F5</strong> 能够在<strong>数秒内</strong>调试运行，全量编译耗时也在一个可接受的水平（<strong>20s</strong> 左右）。但是随着刷题量越来越多，编译链接速度出现了非常明显的下降，有时候也会在办公电脑上刷题（系统版本不同），全量编译造成的糟糕开发体验也越来越不可接受。</p>
+<p>所以需要调整 CMakeLists 配置，<strong>指定需要调试的 LeetCode ，减少参与编译的源码数量（cpp 文件）</strong>。</p>
+<h3 id="12-测试-case-编写繁琐">1.2. 测试 Case 编写繁琐<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#12-测试-case-编写繁琐" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>第二个影响刷题体验的问题是测试 Case 的编写。</p>
+<p>正如上面实例代码，所有的测试 case 都需要自己手动构造参数并检验运行结果：</p>
+<pre><code class="language-c++">namespace leetcode_xxx {
+
+int main() {
+    // 1. 编排测试 case
+    std::vector&lt;std::tuple&lt;std::string, int>> testCases{
+        std::make_tuple(&quot;hello&quot;, 5),
+        std::make_tuple(&quot;world&quot;, 5),
+        std::make_tuple(&quot;&quot;, 0)
+    };
+    // 2. 遍历测试 case
+    for (auto it = testCases.begin(); it != testCases.end(); it++) {
+        std::string input;
+        int expected;
+        std::tie(input, expected) = *it;
+        int actual = Solution().charCount(input);
+        // 3. 组装输出日志
+        if ( actual != expected ) {
+            std::cout &lt;&lt; &quot;input(&quot; &lt;&lt; input &lt;&lt; &quot;)&quot; &lt;&lt; &quot; FAILED&quot;&lt;&lt; std::endl
+            std::cout &lt;&lt; &quot;\texpected: &quot;&lt;&lt; expected &lt;&lt; &quot;actual: &quot;&lt;&lt; actual &lt;&lt; std::endl;
+        } else {
+            std::cout &lt;&lt; &quot;input(&quot; &lt;&lt; input &lt;&lt; &quot;)&quot; &lt;&lt; &quot; PASSED&quot;&lt;&lt; std::endl
+        }
+    }
+    return 0;
+}
+}
+</code></pre>
+<p>每道题都需要手动完成上面代码中的 3 个步骤，存在一定量的模板代码，入参、返回值的数量和类型也没法用 Snippet 很好解决。特别是当某个 Test Case 计算出错需要调试时，需要注释某些 Test Case 进行针对调试，轻度强迫症患者认为这种操作不够优雅。</p>
+<h2 id="2-使用-googletest-管理-testcase">2. 使用 GoogleTest 管理 TestCase<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#2-使用-googletest-管理-testcase" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<blockquote>
+<p>每道 LeetCode 题解都是一个简单函数调用，非常适合单元测试。</p>
+</blockquote>
+<p>GooleTest 是 Google 开源的 C++ 测试、Mock 框架，基于 <strong>xUnit</strong> 架构实现，用过 xUnit 的朋友上手几乎没有额外的理解成本。GoogleTest 遵照以下理念（摘自官网）实现：</p>
+<ol>
+<li>Tests should be independent and repeatable. It’s a pain to debug a test that succeeds or fails as a result of other tests. googletest isolates the tests by running each of them on a different object. When a test fails, googletest allows you to run it in isolation for quick debugging.</li>
+<li>Tests should be well organized and reflect the structure of the tested code. googletest groups related tests into test suites that can share data and subroutines. This common pattern is easy to recognize and makes tests easy to maintain. Such consistency is especially helpful when people switch projects and start to work on a new code base.</li>
+<li>Tests should be portable and reusable. Google has a lot of code that is platform-neutral; its tests should also be platform-neutral. googletest works on different OSes, with different compilers, with or without exceptions, so googletest tests can work with a variety of configurations.</li>
+<li>When tests fail, they should provide as much information about the problem as possible. googletest doesn’t stop at the first test failure. Instead, it only stops the current test and continues with the next. You can also set up tests that report non-fatal failures after which the current test continues. Thus, you can detect and fix multiple bugs in a single run-edit-compile cycle.</li>
+<li>The testing framework should liberate test writers from housekeeping chores and let them focus on the test content. googletest automatically keeps track of all tests defined, and doesn’t require the user to enumerate them in order to run them.</li>
+<li>Tests should be fast. With googletest, you can reuse shared resources across tests and pay for the set-up/tear-down only once, without making tests depend on each other.</li>
+</ol>
+<p>如果上面这些理解都落实到了 GoogleTest 实现中，我们将从繁琐的测试 Case 编写中解放出来，专注于问题本身。利用 GoogleTest，我们不用手动遍历参数组合、不用在某个统一位置（<code>main.cpp</code>）手动指定需要执行那个问题（第 5 条）；当测试失败时，框架会自动输出参数和结果，并且可以运行特定参数组合的 Test Case 而不是通过注释代码实现（第 1 条，第 4 条）。</p>
+<h3 id="21-添加-google-test-依赖">2.1. 添加 Google Test 依赖<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#21-添加-google-test-依赖" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>有很多种方式添加 GoogleTest 的依赖，比如 拷贝源码或依赖静态/动态库、git submodule 以及 CMake FetchContent。显然，第一种方式是灵活性最低的一种，既没办法快速升级新版本，还要配置好 header、.so、.a 路径，在新机器上还需要重新下载这些文件（如果把它们加入版本控制就另当别论了）。第二种方式较第一种稍好，可以快速升级并在新机器上建立环境。第三种方式是本文使用的方式，也是 GoogleTest 官方推荐的，较 git submodule，可以让 CMake 帮我们管理 gtest 项目路径变量，下面是相关配置：</p>
+<pre><code class="language-cmake"># include 要求 CMake >= 3.11
+include(FetchContent)
+# Google Test 官网推荐使用最新 commit，非常勇
+FetchContent_Declare(
+    gtest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG release-1.10.0
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL &quot;&quot; FORCE)
+# 获取/创建 gtest 相关变量
+FetchContent_GetProperties(gtest)
+# 注意这里的 gtest 是上面 gtest 的小写, 个人感觉全小写可读性更高.
+if(NOT gtest_POPULATED)
+    # 下载gtest源码到指定目录
+    FetchContent_Populate(gtest)
+    # message(${gtest_SOURCE_DIR} ${gtest_BINARY_DIR})
+    # 将 gtest 工程添加到编译流程
+    add_subdirectory(${gtest_SOURCE_DIR} ${gtest_BINARY_DIR})
+endif()
+# FetchContent_Declare 后面的配置可以用下面一行配置代替.
+# FetchContent_MakeAvailable(googletest)
+</code></pre>
+<p>配置好后重新执行 <code>CMake: Configure</code> 就会自动下载 gtest 项目并解压到 <code>build/_dep</code>（默认目录）。</p>
+<p><img src="../attachments/2021-05-08-leetcode遇上googletest/cmake_configure.jpg" alt width="auto" height="auto"/></p>
+<h3 id="22-创建测试程序">2.2. 创建测试程序<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#22-创建测试程序" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>接下来需要为测试创建一个 executable target，首先编写测试代码：</p>
+<pre><code class="language-text">// hello_test.cpp
+TEST(HelloTest, BasicAssertions) {
+  // Expect two strings not to be equal.
+  EXPECT_STRNE(&quot;hello&quot;, &quot;world&quot;);
+  // Expect equality.
+  EXPECT_EQ(7 * 6, 42);
+}
+</code></pre>
+<p><code>TEST</code> 是一个宏函数，它定义了测试集合名称和测试 Case 名称，宏展开后会一个 <code>class</code>，类似的宏函数还有 <code>TEST_F</code>、<code>TEST_P</code>，至于它们的实现细节，以及如何做到自动收集所有的测试 Case，暂时还没来得及去探究，等后面有时间了再回过头补上。</p>
+<p>然后修改 <code>CMakeLists.txt</code>：</p>
+<pre><code class="language-cmake"># 开启测试，非常重要
+enable_testing()
+
+add_executable(
+  hello_test
+  hello_test.cpp
+)
+# gtest_main 在 gtest 项目中定义，在前面用 add_subdirectory 引入了，所以这里可以直接使用
+target_link_libraries(
+  hello_test
+  gtest_main
+)
+
+include(GoogleTest)
+gtest_discover_tests(hello_test)
+</code></pre>
+<p><code>gtest_discover_tests</code> 使用 post-build 从 target（hello_test）中获取所有定义的测试 Case。<code>gtest_main</code> 中定义了 main 函数，会根据输入参数（—gtest_filter 等）自动执行测试 Case。</p>
+<blockquote>
+<p>所以即使只想执行某一个测试Case，也需要完整编译工程。
+使用 <code>TEST_F</code> 和 <code>TEST_P</code> 也还是会存在一定模板代码，继续用 Snippet 解决。</p>
+</blockquote>
+<h3 id="23-c-testmate-拓展">2.3. C++ TestMate 拓展<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#23-c-testmate-拓展" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>完成上面两个步骤之后就可以编译并运行单元测试了：</p>
+<pre><code class="language-shell">cmake -S . -B build
+cmake --build build
+cd build &amp;&amp; ctest
+</code></pre>
+<p>在<a href="../notes/2021-01-18-vscode搭建c++开发环境" class="internal internal-link alias" data-slug="notes/2021-01-18-vscode搭建c++开发环境">VSCode搭建C++开发环境</a>中讲解过怎么使用 VSCode <strong>F5</strong> 代替命令行一键运行，这里就不做过多赘述了。</p>
+<p><strong>F5</strong> 虽然能快速地运行测试，但是测试 Case 的执行结果在 <strong>DEBUG CONSOLE</strong> 中不是非常直观（没有高亮显示），并且无法单独调试某个失败的 Case，粒度比较粗。这里推荐安装 <a href="https://github.com/matepek/vscode-catch2-test-adapter" class="external external-link">C++ TestMate<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a>，它会在 <strong>Test Explorer</strong> 中列举出所有的测试 Case，支持一键运行所有 Case 的同时也支持或特定 Case/Suite 的运行、调试（见截图，实际体验会很不错）。</p>
+<p><img src="https://github.com/matepek/vscode-catch2-test-adapter/raw/master/resources/Screenshot_2019-05-28.png" alt="C++ TestMate"/></p>
+<p>因为 C++ TestMate 通过可执行文件列举测试 Case，安装拓展后要根据你实际的工程配置下可执行文件/编译产物的位置：
+<img src="../attachments/2021-05-08-leetcode遇上googletest/cpp_testmate_exeutables.jpg" alt width="auto" height="auto"/></p>
+<blockquote>
+<p>如果可执行文件名带有 test 字样，并且在 build、out 等目录中，使用默认配置就可以了。</p>
+</blockquote>
+<p><strong>一个小坑</strong></p>
+<p>在配置 VSCode 一键运行时掉进了一个坑，导致 <strong>F5</strong> 一键运行无法断点调试，但是用 C++ TestMate 的调试按钮就可以断点调试。但是 C++ TestMate 列举测试 Case 依赖可执行文件的构建成功，所以修改完代码需要先 <strong>build</strong> 再在 C++ TestMate 中启动调试，流程变麻烦了。</p>
+<p>各种排查之后发现是因为添加了两个参数：</p>
+<pre><code class="language-json">// launch.json
+{
+    &quot;configurations&quot;: [
+        {
+            &quot;name&quot;: &quot;CMake - Build and launch debuging(lldb)&quot;,
+            &quot;type&quot;: &quot;cppdbg&quot;,
+            &quot;request&quot;: &quot;launch&quot;,
+            &quot;program&quot;: &quot;${workspaceFolder}/build/main_test&quot;,
+            &quot;args&quot;: [
+                // cause debugger not able to attach
+                &quot;--gtest_list_tests&quot;,
+                &quot;--gtest_output=xml:${workspaceFolder}/build/gtest_list.xml&quot;
+            ]
+        }
+    ]
+}
+</code></pre>
+<p>当时是安装好 C++ TestMate 后去查看它都有哪些可以优化体验的配置，然后就看到了 <strong>Test List Caching</strong> 配置，说是能加速测试 Case 在 Test Explorer 中刷新的速度，没多想就给加上了参数，然后就掉坑了。因为实际体验这两个参数加上好像也没啥变化，所以就不要画蛇添足了。</p>
+<p><img src="../attachments/2021-05-08-leetcode遇上googletest/cpp_testmate.jpg" alt width="auto" height="auto"/></p>
+<h2 id="3-优化编译速度">3. 优化编译速度<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#3-优化编译速度" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>第 2 节中我们利用 GoogleTest 解决了测试 Case 编写繁琐的问题，现在要解决是如何优化编译速度，<strong>进一步提高刷题的幸福感</strong>。</p>
+<p>先看下 <code>src/CMakeLists.txt</code> 的内容：</p>
+<pre><code class="language-cmake">aux_source_directory(. SRC)
+add_library (src ${SRC})
+</code></pre>
+<p>内容非常简单，就是将 <strong>src</strong> 目录下所有 <code>.cpp</code> 编译链接成一个 <em>libsrc.a</em> 。由于每个 <code>.c/.cc/.cxx/.cpp</code> 文件都是一个独立的编译单元，都需要独立解析 include 的 header 文件，如果 header 中有 template（STL、Boost），就会实例化相同的模板实例。LeetCode 到目前为止一共 2K+ 道题，触发一次全量编译差不多得花 30min+（MacBook pro 2017），所以随着刷题数量的增加，在编译上浪费的时间也会越来越多，体验越来越差。</p>
+<p>所以最直接的想法就是<strong>指定需要参与编译的源文件，即指定 LeetCode 题号对应的源文件</strong>，将编译耗时保持在数秒之内。</p>
+<blockquote>
+<p>题解文件名按 xxx.cpp 命名，对应测试代码是 xxx_test.cpp</p>
+</blockquote>
+<p>下面是优化后的 <code>src/CMakeLists.txt</code>：</p>
+<pre><code class="language-cmake">set(LEETCODE_SRC_FILE &quot;ALL&quot; CACHE STRING &quot;Which src files need compiling.&quot;)
+if(${LEETCODE_SRC_FILE} STREQUAL &quot;ALL&quot; OR NOT EXISTS ${LEETCODE_SRC_FILE})
+  aux_source_directory(. SRC)
+  add_library (src ${SRC})
+else()
+  add_library (src ${LEETCODE_SRC_FILE})
+endif()
+</code></pre>
+<p>我们定义 <code>LEETCODE_SRC_FILE</code> 指定需要编译的源文件，然后在根目录的 <code>CMakeLists.txt</code> 中接收命令行参数并传递值给 <code>LEETCODE_SRC_FILE</code>：</p>
+<pre><code class="language-cmake"># ...
+set(LEETCODE_PROBLEM &quot;ALL&quot; CACHE STRING &quot;Choose the problem to run, all problems will be build if not specified or not found.&quot;)
+
+if(${LEETCODE_PROBLEM} STREQUAL &quot;ALL&quot;)
+    # Build all.
+    set(LEETCODE_SRC_FILE &quot;ALL&quot; CACHE STRING &quot;&quot; FORCE)
+    aux_source_directory(./test TEST_SUIT_SRCS)
+    add_executable(main ${TEST_SUIT_SRCS})
+else()
+    # Build single.
+    set(LEETCODE_SRC_FILE ${LEETCODE_PROBLEM}.cpp CACHE STRING &quot;&quot; FORCE)
+    add_executable(main test/${LEETCODE_PROBLEM}_test.cpp)
+endif()
+add_subdirectory(src)
+# ...
+</code></pre>
+<p>这里再次定义了个类似的 <code>LEETCODE_PROBLEM</code> 变量，即“题号”，然后在编译时通过 <code>-DLEETCODE_PROBLEM=XX</code> 传递给 CMake，这样就做到了指定源码编译。</p>
+<blockquote>
+<p><code>set</code> 命令的用法见 <a href="https://cmake.org/cmake/help/git-stage/command/set.html" class="external external-link">CMake 文档<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a>，<code>FORCE</code> 是为了保证参数不受缓存影响而及时生效。</p>
+</blockquote>
+<p>对应的，再调整下 <code>tasks.json</code>，加上 <code>LEETCODE_PROBLEM</code> 参数：</p>
+<pre><code class="language-json">{
+    // ...
+    &quot;tasks&quot;: [
+        {
+            &quot;type&quot;: &quot;process&quot;,
+            &quot;label&quot;: &quot;C/C++: cmake debug build&quot;,
+            &quot;command&quot;: &quot;cmake&quot;,
+            &quot;args&quot;: [
+                &quot;--log-level=DEBUG&quot;,
+                &quot;-DCMAKE_BUILD_TYPE=Debug&quot;,
+                // twoSum
+                &quot;-DLEETCODE_PROBLEM=1&quot;,
+                // cwd: build
+                &quot;..&quot;
+            ]
+            // ...
+        },
+        // ...
+    ]
+}
+</code></pre>
+<p>这样每次只需要修改 <code>tasks.json</code> 就可以直接 <strong>F5</strong> 调试了。</p>
+<h2 id="4-使用-github-action-自动化测试">4. 使用 GitHub Action 自动化测试<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#4-使用-github-action-自动化测试" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>虽然到这里我们已经可以愉快地刷题了，但是刷题过程中对数据结构的修改可能影响了已有题解，考虑到编译耗时，我们又不太可能会随时全量编译，这些未及时发现的问题就累积下来了。</p>
+<p>这里我们可以借助 GitHub Actions 提供的 CI/CD 能力，在 push 之后执行全量编译并执行测试，失败了还可以配置邮件通知，及时暴露问题。</p>
+<p>这里就直接贴配置了：</p>
+<pre><code class="language-yaml">name: Test
+
+on: [push]
+
+jobs:
+  gtest:
+    name: Run tests on GTest
+    strategy:
+      # 在 macOS 和 Linux 两个平台测试，提高代码可移植性.
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      buildDir: &quot;${{ github.workspace }}/build&quot;
+      executable: main
+
+    steps:
+      - name: Project checkout
+        uses: actions/checkout@v2
+
+      - name: Get latest CMake and ninja
+        uses: lukka/get-cmake@latest
+
+      - name: Run CMake, build with CMake
+        uses: lukka/run-cmake@v3
+        with:
+          cmakeListsTxtPath: ${{ github.workspace }}/CMakeLists.txt
+          buildDirectory: ${{ env.buildDir }}
+          # 不指定 LEETCODE_PROBLEM 默认是全量编译.
+          cmakeAppendedArgs: &quot;--log-level=DEBUG -Wdev -DCMAKE_BUILD_TYPE=Debug&quot;
+
+      - name: Run executable
+        run: ${{ env.buildDir }}/${{ env.executable }}
+</code></pre>
+<p>然后可以在 README.md 中配置个<a href="https://docs.github.com/en/actions/managing-workflow-runs/adding-a-workflow-status-badge" class="external external-link">徽标<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a>，显示上次自动化测试的执行结果。</p>
+<blockquote>
+<p>如果本地没有 Linux 环境，可以使用 docker 容器曲线救国。</p>
+</blockquote>
+<h2 id="5-总结">5. 总结<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#5-总结" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>GoogleTest 将我们从繁琐的测试 Case 中解放出来；而最小化编译使我们免于低效地等待编译；GitHub Actions 则帮助我们及时纠正不小心引入的问题。工欲善其事，必先利其器，善于利用工具，改进影响效率的瓶颈，避免陷入低效陷阱。</p>
+<p>完整项目代码见 <a href="https://github.com/Clsrfish/leetcode" class="external external-link">https://github.com/Clsrfish/leetcode<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a> 。</p>
+<h2 id="6-参考文章">6. 参考文章<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#6-参考文章" class="internal internal-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p><a href="https://google.github.io/googletest/" class="external external-link">Google Test<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a></p>
+<p><a href="https://cmake.org/cmake/help/latest/module/FetchContent.html" class="external external-link">FetchContent<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a></p>
+<p><a href="https://cmake.org/cmake/help/git-stage/command/set.html" class="external external-link">CMake set<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a></p>
+<p><a href="https://cmake.org/cmake/help/git-stage/module/GoogleTest.html" class="external external-link">GoogleTest Module<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a></p>
+<p><a href="https://github.com/features/actions" class="external external-link">GitHub Actions<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a></p>
+<p><a href="https://docs.github.com/en/actions/managing-workflow-runs/adding-a-workflow-status-badge" class="external external-link">Adding a workflow status badge<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a></p></div></article><hr/><div class="page-footer"></div></div><div class="right sidebar"><div class="graph"><h3>关系图谱</h3><div class="graph-outer"><div class="graph-container" data-cfg="{&quot;drag&quot;:true,&quot;zoom&quot;:true,&quot;depth&quot;:1,&quot;scale&quot;:1.1,&quot;repelForce&quot;:0.5,&quot;centerForce&quot;:0.3,&quot;linkDistance&quot;:30,&quot;fontSize&quot;:0.6,&quot;opacityScale&quot;:1,&quot;showTags&quot;:true,&quot;removeTags&quot;:[],&quot;focusOnHover&quot;:false,&quot;enableRadial&quot;:false}"></div><button class="global-graph-icon" aria-label="Global Graph"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 55 55" fill="currentColor" xml:space="preserve"><path d="M49,0c-3.309,0-6,2.691-6,6c0,1.035,0.263,2.009,0.726,2.86l-9.829,9.829C32.542,17.634,30.846,17,29,17
+                s-3.542,0.634-4.898,1.688l-7.669-7.669C16.785,10.424,17,9.74,17,9c0-2.206-1.794-4-4-4S9,6.794,9,9s1.794,4,4,4
+                c0.74,0,1.424-0.215,2.019-0.567l7.669,7.669C21.634,21.458,21,23.154,21,25s0.634,3.542,1.688,4.897L10.024,42.562
+                C8.958,41.595,7.549,41,6,41c-3.309,0-6,2.691-6,6s2.691,6,6,6s6-2.691,6-6c0-1.035-0.263-2.009-0.726-2.86l12.829-12.829
+                c1.106,0.86,2.44,1.436,3.898,1.619v10.16c-2.833,0.478-5,2.942-5,5.91c0,3.309,2.691,6,6,6s6-2.691,6-6c0-2.967-2.167-5.431-5-5.91
+                v-10.16c1.458-0.183,2.792-0.759,3.898-1.619l7.669,7.669C41.215,39.576,41,40.26,41,41c0,2.206,1.794,4,4,4s4-1.794,4-4
+                s-1.794-4-4-4c-0.74,0-1.424,0.215-2.019,0.567l-7.669-7.669C36.366,28.542,37,26.846,37,25s-0.634-3.542-1.688-4.897l9.665-9.665
+                C46.042,11.405,47.451,12,49,12c3.309,0,6-2.691,6-6S52.309,0,49,0z M11,9c0-1.103,0.897-2,2-2s2,0.897,2,2s-0.897,2-2,2
+                S11,10.103,11,9z M6,51c-2.206,0-4-1.794-4-4s1.794-4,4-4s4,1.794,4,4S8.206,51,6,51z M33,49c0,2.206-1.794,4-4,4s-4-1.794-4-4
+                s1.794-4,4-4S33,46.794,33,49z M29,31c-3.309,0-6-2.691-6-6s2.691-6,6-6s6,2.691,6,6S32.309,31,29,31z M47,41c0,1.103-0.897,2-2,2
+                s-2-0.897-2-2s0.897-2,2-2S47,39.897,47,41z M49,10c-2.206,0-4-1.794-4-4s1.794-4,4-4s4,1.794,4,4S51.206,10,49,10z"></path></svg></button></div><div class="global-graph-outer"><div class="global-graph-container" data-cfg="{&quot;drag&quot;:true,&quot;zoom&quot;:true,&quot;depth&quot;:-1,&quot;scale&quot;:0.9,&quot;repelForce&quot;:0.5,&quot;centerForce&quot;:0.2,&quot;linkDistance&quot;:30,&quot;fontSize&quot;:0.6,&quot;opacityScale&quot;:1,&quot;showTags&quot;:true,&quot;removeTags&quot;:[],&quot;focusOnHover&quot;:true,&quot;enableRadial&quot;:true}"></div></div></div><div class="toc"><button type="button" class="toc-header" aria-controls="toc-48" aria-expanded="true"><h3>目录</h3><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fold"><polyline points="6 9 12 15 18 9"></polyline></svg></button><ul id="list-0" class="toc-content overflow"><li class="depth-0"><a href="#leetcode遇上googletest" data-for="leetcode遇上googletest">LeetCode遇上GoogleTest</a></li><li class="depth-1"><a href="#1-前言" data-for="1-前言">1. 前言</a></li><li class="depth-2"><a href="#11-编译速度影响刷题体验" data-for="11-编译速度影响刷题体验">1.1. 编译速度影响刷题体验</a></li><li class="depth-2"><a href="#12-测试-case-编写繁琐" data-for="12-测试-case-编写繁琐">1.2. 测试 Case 编写繁琐</a></li><li class="depth-1"><a href="#2-使用-googletest-管理-testcase" data-for="2-使用-googletest-管理-testcase">2. 使用 GoogleTest 管理 TestCase</a></li><li class="depth-2"><a href="#21-添加-google-test-依赖" data-for="21-添加-google-test-依赖">2.1. 添加 Google Test 依赖</a></li><li class="depth-2"><a href="#22-创建测试程序" data-for="22-创建测试程序">2.2. 创建测试程序</a></li><li class="depth-2"><a href="#23-c-testmate-拓展" data-for="23-c-testmate-拓展">2.3. C++ TestMate 拓展</a></li><li class="depth-1"><a href="#3-优化编译速度" data-for="3-优化编译速度">3. 优化编译速度</a></li><li class="depth-1"><a href="#4-使用-github-action-自动化测试" data-for="4-使用-github-action-自动化测试">4. 使用 GitHub Action 自动化测试</a></li><li class="depth-1"><a href="#5-总结" data-for="5-总结">5. 总结</a></li><li class="depth-1"><a href="#6-参考文章" data-for="6-参考文章">6. 参考文章</a></li><li class="overflow-end"></li></ul></div><div class="backlinks"><h3>反向链接</h3><ul id="list-0" class="overflow"><li><a href="../notes/2021-01-11-记一次heapbufferoverflow" class="internal">2021-01-11-记一次HeapBufferOverflow</a></li><li><a href="../notes/2021-01-18-vscode搭建c++开发环境" class="internal">2021-01-18-VSCode搭建C++开发环境</a></li><li class="overflow-end"></li></ul></div></div><footer class><p>Created with <a href="https://quartz.jzhao.xyz/">Quartz v5.0.0</a> © 2026</p><ul><li><a href="https://github.com/clsrfish/knowledgebase">GitHub</a></li></ul></footer></div></div></body><script src="../static/resource-after-8b336f9a.js" type="application/javascript" data-persist="true"></script><script src="../static/resource-after-baba652b.js" type="application/javascript" data-persist="true"></script><script src="../static/resource-after-5eb75950.js" type="module" data-persist="true"></script><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/copy-tex.min.js" type="application/javascript" data-persist="true"></script><script src="../postscript-1d7bbe70.js" type="module" data-persist="true"></script></html>
